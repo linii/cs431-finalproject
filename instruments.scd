@@ -1,7 +1,7 @@
 // an Instrument "class" implemented using a Supercollider environment.
 
 ~instrument = {
-	arg synthdef = \sfgrain, posFunc = ~simplePos, durFunc = ~simpleDur;
+	arg synthdef=\sfgrain, posFunc=~simplePos, durFunc=~simpleDur;
 
 	~id = ~id + 1; // assign sample an id
 
@@ -40,6 +40,13 @@
 	)
 };
 
+
+// ------------------------------------------------------------------
+// sample instruments... pretty uninspiring thus far
+
+~allInsts = [~instrument.(\sfgrain, ~simplePos, ~simpleDur)];
+
+
 // ------------------------------------------------------------------
 // example position functions, make your own!
 
@@ -52,7 +59,7 @@
 // example duration functions, make your own!
 
 ~simpleDur = {
-	0.2 + 100.rand;
+	0.01 + 1.0.rand;
 };
 
 

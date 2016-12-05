@@ -2,9 +2,15 @@
 
 ~sample = {
 	|loc|
+	"loc".postln;
+	loc.postln;
 	~id = ~id + 1; // assign sample an id
 
-	b = Buffer.read(s, loc); // assign to server
+	thisProcess.nowExecutingPath.dirname.postln;
+	b = Buffer.read(s, thisProcess.nowExecutingPath.dirname +/+ loc); // assign to server
+	b.postln;
+	b.numFrames.postln;
+	b.numChannels.postln;
 
 	(
 		id_: ~id - 1,
@@ -14,7 +20,8 @@
 		buf_: b,
 
 		// Length of the sample in seconds
-		length_: (b.numFrames / b.numChannels ) / 44100,
+		// todo: fix
+/*		length_: (b.numFrames / b.numChannels ) / 44100,*/
 
 
 		// Debug function to print information about the sample
@@ -28,7 +35,7 @@
 			self.length_.post;
 		}
 	)
-}
+};
 
 // Example samples
 // ideally, samples should be < 1 minute or less
@@ -43,7 +50,6 @@
 // Manmade noises
 ~sawing = "sounds/sawing.wav";      // done
 ~ambient = "sounds/restaurant.wav"; // done
-~voice = "sounds/vocal.wav";        // done
 
 // MUSIC
 // Instruments (solo / w/ accompaniment)
@@ -51,5 +57,12 @@
 ~piano2 = "sounds/yuri_on_ice.wav";         // done :D
 
 // Songs
-~edm = "sounds/shelter.wav"     // done
+~edm = "sounds/shelter.wav";     // done
 ~pop = "sounds/closer.wav";     // done
+
+~allSamples = [
+	~rain, ~fire, ~stream,
+	~sawing, ~ambient, ~voice,
+	~piano1, ~piano2,
+	~edm, ~pop
+];

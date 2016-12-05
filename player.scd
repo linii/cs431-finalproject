@@ -4,7 +4,7 @@
 ~gridSize = 9;
 
 // Iteration speed
-~bpm = 120;
+~bpm = 80;
 
 // How dense the cloud gets
 ~durMutipler = 2.0;
@@ -17,22 +17,18 @@
 // starting grid position
 ~init.(1);
 
-// play the grid
-SystemClock.sched(0.0,{arg time;
-	// find out where we are before new grid is created
-	~gridCount = ~gridCount + 1;
-	~bar = (~gridCount/8+0.45).round;
-	~beat = ((~gridCount-1)%8+0.9).round;
+// reset ~gridCount
+~gridCount = 0;
 
+// play the grid
+SystemClock.sched(0.0, {arg time;
+	~gridCount = ~gridCount + 1;
 	d.next_;
 
-	// display bar, beat, and frame number
-	("Bar: " + ~bar).post;
-	("   Beat: " + ~beat).post;
 	("   Grid Count: " + ~gridCount).postln;
 	~tempo // delay before running this function again.
-
 });
+
 
 
 // ------------------------------------------------------------------
@@ -43,6 +39,10 @@ SystemClock.sched(0.0,{arg time;
 
 // function to get a new grid
 ~init = {arg mvt;
+	~gridCount = 1;
+	"mvt".postln;
+	mvt.postln;
+
 	case
 	{mvt == 0}{d = ~grid.value(~gridSize, ~initWithParams.(~initParamsA).asArray)}
 	{mvt == 1}{d = ~grid.value(~gridSize, ~initWithParams.(~initParamsB).asArray)}
@@ -52,6 +52,8 @@ SystemClock.sched(0.0,{arg time;
 
 // first init config
 ~initParamsA = [
+	[~instrument.()],
+	[~rain, ~ambient, ~edm],
 	[0, 0, 1, 3],        // directions
 	[3, 5, 5, 5],
 	[0, 0, 4, 2]]
@@ -59,13 +61,18 @@ SystemClock.sched(0.0,{arg time;
 
 // second init config
 ~initParamsB = [
+	[~instrument.()],
+	[~fire, ~sawing, ~piano1, ~pop],
 	[0, 0, 1, 3, 1, 2],
 	[3, 5, 5, 5, 2, 8],  // x-coordinates
 	[0, 0, 4, 2, 4, 2]   // y-coordinates
 ];
 
-// third init config
+// third init config:
+// squares in diagonal pattern
 ~initParamsC = [
+	[~instrument.()],
+	[~stream, ~voice, ~piano2],
 	[0, 1, 2, 3, 0, 0, 1, 1, 0, 1, 2, 3, 0],
 	[0, 0, 1, 0, 1, 1, 2, 3, 4, 5, 6, 7, 8],
 	[0, 0, 1, 0, 1, 1, 2, 3, 4, 5, 6, 7, 8].scramble
@@ -74,19 +81,30 @@ SystemClock.sched(0.0,{arg time;
 ~initWithParams = {
 	|params|
 	var doiks = List.new();
-	params[1].size.do{arg i;
+	params.postln;
+
+	params[2].size.do{arg i;
 		doiks.add(~doik.value(
-			\A,
-			params[0][i],  // direction
-			[params[1][i], params[2][i]]))};  // x & y coords
+			params[0],
+			params[1],
+			params[2][i],  // direction
+			[params[3][i], params[2][i]]))};  // x & y coords
 	doiks;
 };
 
 ~initRandom = {
 	var doiks = List.new();
+	var randSamples = List.new();
+	var randInsts = List.new();
+	4.rand.do {
+		randSamples.add(~allSamples.choose);
+		randInsts.add(~allInsts.choose);
+	};
+
 	rrand(12, 20).do(
 		doiks.add( ~doik.value(
-			\A,
+			randInsts,
+			randSamples,
 			rrand(0, 3),
 			[(~gridSize - 1).rand, (~gridSize - 1).rand])
 		)

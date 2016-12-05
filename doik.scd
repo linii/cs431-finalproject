@@ -9,7 +9,21 @@
 // 3. starting direction
 // 4. initial coordinate
 ~doik = {
-	|synth, samples, direction, coord|
+	|synths, samples, direction, coord|
+
+	// convert from paths to real samples
+	var convSamples = List.new();
+
+	synths.postln;
+	samples.postln;
+	samples.size.postln;
+	direction.postln;
+	coord.postln;
+
+	samples.do { |s|
+		convSamples.add(~sample.(s));
+	};
+
 
 	// Increment UID counter and assign doik a UID.
 	~id = ~id + 1;
@@ -21,7 +35,7 @@
 		instruments_: synths,
 
 		// Samples that can be played in combo with a Synth
-		samples_: samples,
+		samples_: convSamples,
 
 		// 0 (up) 1 (left) 2 (down) 3(right)
 		direction_: direction,
@@ -71,51 +85,76 @@
 	// it counts as a wall collision.
 	| doikCollisions, wallCollisions |
 
-	var direction, coordinates, count; // Holds props of the particular Doik under consideration
-
-	var panningArray = Array.new(6); // Controls spatialization of note
-	panningArray = [0, 0.7, 1, 0.7, 0, 1];
+	"in collisions".postln;
+	doikCollisions.postln;
+	wallCollisions.postln;
 
 	// For each doik that has collided with another doik:
 	doikCollisions.do({
 		|doik|
-
-		x =  Synth(\sfgrain,
-			[
-				\bufnum, b.bufnum,
-				\startPos,rrand(timestart,timeend),
-				\amp, exprand(0.005,0.1),
-				\pan, lastval.rand2,
-				\dur, 0.1+(lastval*0.5)
-			]
-		);
+		doik.instruments_.do { |inst|
+			doik.samples_.do { |sample|
+				inst.debug_;
+				sample.debug_;
+				{
+					Synth(\sfgrain,
+						[
+							\bufnum, sample.buf_.bufnum,
+							\startPos, inst.posFunc_.value[1], // todo: fix
+							\amp, exprand(0.005,0.1),   // random for now
+							\pan, 1.0.rand,             // random for now
+							\dur, inst.durFunc_.value;
+						]
+					);
+				}.fork;
+			};
+		};
 	});
 
 	// For each doik that has collided with a wall:
 	wallCollisions.do({
 		|doik|
-		// do the instrument swapping
-		~playInstWithSamples.(doik.instruments_, doik.samples_);
+		doik.instruments_.do { |inst|
+			doik.samples_.do { |sample|
+				inst.debug_;
+				sample.debug_;
+				{
+					Synth(\sfgrain,
+						[
+							\bufnum, sample.buf_.bufnum,
+							\startPos, inst.posFunc_.value[1], // todo: fix
+							\amp, exprand(0.005,0.1),   // random for now
+							\pan, 1.0.rand,             // random for now
+							\dur, inst.durFunc_.value;
+						]
+					);
+				}.fork;
+			};
+		};
 	});
 };
 
 ~playInstWithSamples = {
-	|instruments, sample|
+	|instruments, samples|
+	s.sync;
 	instruments.do { |inst|
 		samples.do { |sample|
-			x =  Synth(\sfgrain,
-				[
-					\bufnum, b.bufnum,
-					\startPos,rrand(timestart,timeend),
-					\amp, exprand(0.005,0.1),
-					\pan, lastval.rand2,
-					\dur, 0.1+(lastval*0.5)
-				]
-			);
-
+			inst.debug_;
+			sample.debug_;
+			{
+				Synth(\sfgrain,
+					[
+						\bufnum, sample.buf_.bufnum,
+						\startPos, inst.posFunc_.value[1], // todo: fix
+						\amp, exprand(0.005,0.1),   // random for now
+						\pan, 1.0.rand,             // random for now
+						\dur, inst.durFunc_.value;
+					]
+				);
+			}.fork;
 		};
-
-
 	};
 };
+
+
 
