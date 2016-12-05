@@ -9,7 +9,7 @@
 // 3. starting direction
 // 4. initial coordinate
 ~doik = {
-	|synths, samples, direction, coord|
+	|synth, samples, direction, coord|
 
 	// Increment UID counter and assign doik a UID.
 	~id = ~id + 1;
@@ -17,8 +17,8 @@
 		// Unique identifier
 		id_: ~id - 1,
 
-		// Instruments/synths, aka grain definitions contained in doik
-		synths_: synths,
+		// Instrument/synth, aka grain definitions contained in doik
+		instruments_: synths,
 
 		// Samples that can be played in combo with a Synth
 		samples_: samples,
@@ -94,19 +94,28 @@
 	// For each doik that has collided with a wall:
 	wallCollisions.do({
 		|doik|
-		direction     = doik.direction_;
-		coordinates = doik.coords_;
-		count          = doik.count_;
-
-		x =  Synth(\sfgrain,
-			[
-				\bufnum, b.bufnum,
-				\startPos,rrand(timestart,timeend),
-				\amp, exprand(0.005,0.1),
-				\pan, lastval.rand2,
-				\dur, 0.1+(lastval*0.5)
-			]
-		);
+		// do the instrument swapping
+		~playInstWithSamples.(doik.instruments_, doik.samples_);
 	});
+};
+
+~playInstWithSamples = {
+	|instruments, sample|
+	instruments.do { |inst|
+		samples.do { |sample|
+			x =  Synth(\sfgrain,
+				[
+					\bufnum, b.bufnum,
+					\startPos,rrand(timestart,timeend),
+					\amp, exprand(0.005,0.1),
+					\pan, lastval.rand2,
+					\dur, 0.1+(lastval*0.5)
+				]
+			);
+
+		};
+
+
+	};
 };
 
