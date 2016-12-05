@@ -10,17 +10,21 @@
 
 	var initGrid;
 	var totalDoiks;
+	var pos;
 
 	// Initialize a blank 2D array of dimensions (size x size), each element
 	// of the array is an empty list.
 	initGrid = Array2D.fromArray(size, size,
 		Array.fill(size * size, {List.new(0)}));
 
+
 	// For each Doik, add it to the Grid if there is no other Doik
 	// on that spot.
 	initDoiks.do { |d|
-		var pos = initGrid[d.coords_[0],d.coords_[1]];
-		if (pos.size == 0 && ~iteration != 0) {
+		d.debug_;
+		pos = initGrid[d.coords_[0],d.coords_[1]];
+
+		if (pos.size == 0 && ~gridCount != 0) {
 			initGrid[d.coords_[0],d.coords_[1]].add(d);
 			// Marcus note: I commented the following line out and replaced
 			// it with the one above because I was unsure if the original
@@ -110,16 +114,12 @@
 						{
 							if (ds.size < 3, {
 								ds.do { |d, k|
-									d.postln;
 									self.grid_[i, j][k].direction_ = (d.direction_ + 1) % 4;
 									self.grid_[i, j][k].coords_ = self.reverseCoordsOnCollision(d);
 									self.grid_[i, j][k].count_ = d.count_ + 1;
 									self.grid_[i, j][k].count_since_wall_ = d.count_since_wall_ + 1;
 								}
-							}, {
-								"Something bad happened.".postln;
-							});
-							collisions.add(ds.choose); // add a random one if two or more are in the same cell
+							}, { });
 						}, {}
 					)
 				}
@@ -133,14 +133,14 @@
 			var newCoords;
 			var x = d.coords_[0];
 			var y = d.coords_[1];
-			d.coords_.postln;
+
 			switch(d.direction_,
 				{0}, { newCoords = [x, y + 1]},  // up -> down
 				{1}, { newCoords = [x + 1, y]},  // left -> right
 				{2}, { newCoords = [x, y - 1]},  // down -> up
 				{3}, { newCoords = [x - 1, y]} // right -> left
 			);
-			newCoords.postln;
+
 			newCoords;
 		},
 
@@ -163,7 +163,7 @@
 		// Generates the next iteration of the grid
 		next_: {
 			|self|
-			var newDoiks, wallCollisions, doikCollisions;
+			var newDoiks, wallCollisions, doikCollisions, allDoikColls;
 			"\n\n============= New Grid ===============\n\n".postln;
 
 			// Create empty list of doiks for next iteration
@@ -176,12 +176,14 @@
 
 			// Get list of doik collision candidates
 			doikCollisions = self.getDoikCollisions(wallCollisions);
-			"Doik collisions:\t".post;
-			self.printDoikList_(doikCollisions);
+			"Doik collisions:\t".postln;
+			doikCollisions.do{ |ds|
+				self.printDoikList_(ds);
+			};
 
 			// Calling ~onCollision is what "plays" this iteration of the grid. ~onCollision receives arrays of
 			// the Doiks that have hit each other, and the Doiks that have hit a wall
-			~onCollision.(doikCollisions,wallCollisions);
+			allDoikColls = ~onCollision.(doikCollisions,wallCollisions);
 
 			// Update the grid:
 			//   generic movement of each doik on the grid is according to its direction
@@ -201,7 +203,7 @@
 										d.count_ = d.count_ + 1; // Update .count_ of collisions
 										d.count_since_wall_ = 0; // Update number of iterations since last wall collision
 									}, {
-										if (self.doikInList([d], doikCollisions) == False) { // It hasn't collided with a wall
+										if (self.doikInList([d], allDoikColls) == False) { // It hasn't collided with a wall
 											// Continue moving in original direction
 											d.coords_ = [d.coords_[0], d.coords_[1]-1];
 											d.count_since_wall_ = d.count_since_wall_ + 1;
@@ -218,7 +220,7 @@
 										d.count_ = d.count_ + 1;
 										d.count_since_wall_ = 0;
 									}, {
-										if (self.doikInList([d], doikCollisions) == False) {
+										if (self.doikInList([d], allDoikColls) == False) {
 											d.coords_ = [d.coords_[0]-1, d.coords_[1]];
 											d.count_since_wall_ = d.count_since_wall_ + 1;
 										}
@@ -233,7 +235,7 @@
 										d.count_ = d.count_ + 1;
 										d.count_since_wall_ = 0;
 									}, {
-										if (self.doikInList([d], doikCollisions) == False) {
+										if (self.doikInList([d], allDoikColls) == False) {
 											d.coords_ = [d.coords_[0], d.coords_[1] + 1];
 											d.count_since_wall_ = d.count_since_wall_ + 1;
 										}
@@ -250,7 +252,7 @@
 										d.count_ = d.count_ + 1;
 										d.count_since_wall_ = 0;
 									}, {
-										if (self.doikInList([d], doikCollisions) == False) {
+										if (self.doikInList([d], allDoikColls) == False) {
 											d.coords_ = [d.coords_[0] + 1, d.coords_[1]];
 											d.count_since_wall_ = d.count_since_wall_ + 1;
 										}

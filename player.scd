@@ -4,10 +4,19 @@
 ~gridSize = 9;
 
 // Iteration speed
-~bpm = 80;
+~bpm = 200;
 
-// How dense the cloud gets
-~durMutipler = 2.0;
+// How quickly the cloud gets dense
+~durMultiplier = 0.5;
+
+// How long each "grain" can be
+~durMax = 2.0;
+
+// How long each grain is initially
+~durBase = 0.04;
+
+// How many times each grain is played on collision
+~grains = 1;
 
 // ============= END PARAMETERS ==================
 /// helps adjust tempo relative to initial BPM
@@ -15,7 +24,7 @@
 ~tempo = ~convertBPM.(~bpm);
 
 // starting grid position
-~init.(1);
+~init.(0);
 
 // reset ~gridCount
 ~gridCount = 0;
@@ -53,7 +62,7 @@ SystemClock.sched(0.0, {arg time;
 // first init config
 ~initParamsA = [
 	[~instrument.()],
-	[~rain, ~ambient, ~edm],
+	[~piano1, ~ambient, ~stream],
 	[0, 0, 1, 3],        // directions
 	[3, 5, 5, 5],
 	[0, 0, 4, 2]]
@@ -72,7 +81,7 @@ SystemClock.sched(0.0, {arg time;
 // squares in diagonal pattern
 ~initParamsC = [
 	[~instrument.()],
-	[~stream, ~voice, ~piano2],
+	[~stream, ~ambient, ~piano2],
 	[0, 1, 2, 3, 0, 0, 1, 1, 0, 1, 2, 3, 0],
 	[0, 0, 1, 0, 1, 1, 2, 3, 4, 5, 6, 7, 8],
 	[0, 0, 1, 0, 1, 1, 2, 3, 4, 5, 6, 7, 8].scramble

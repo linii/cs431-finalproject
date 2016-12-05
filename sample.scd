@@ -2,22 +2,15 @@
 
 ~sample = {
 	|loc|
-	"loc".postln;
 	loc.postln;
 	~id = ~id + 1; // assign sample an id
-
-	thisProcess.nowExecutingPath.dirname.postln;
-	b = Buffer.read(s, thisProcess.nowExecutingPath.dirname +/+ loc); // assign to server
-	b.postln;
-	b.numFrames.postln;
-	b.numChannels.postln;
 
 	(
 		id_: ~id - 1,
 		name_: loc,
 
 		// Reference to the sample
-		buf_: b,
+		buf_: thisProcess.nowExecutingPath.dirname +/+ loc,
 
 		// Length of the sample in seconds
 		// todo: fix

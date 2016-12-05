@@ -15,7 +15,7 @@
 	var convSamples = List.new();
 
 	// init length of grain
-	var durBase = 0.1;
+	var durBase = ~durBase;
 
 	synths.postln;
 	samples.postln;
@@ -26,9 +26,6 @@
 	samples.do { |s|
 		convSamples.add(~sample.(s));
 	};
-
-
-
 
 	// Increment UID counter and assign doik a UID.
 	~id = ~id + 1;
@@ -43,7 +40,7 @@
 		samples_: convSamples,
 
 		// durBase
-		durbase_: durBase,
+		durBase_: durBase,
 
 		// 0 (up) 1 (left) 2 (down) 3(right)
 		direction_: direction,
@@ -78,8 +75,6 @@
 	)
 };
 
-
-
 ~onCollision = {
 	// doikCollisions is a list of doiks that are in collision with other doik
 	// (one chosen randomly out of each collision)
@@ -92,35 +87,48 @@
 	// simplicity purposes if a doik-doik-wall collision occurs,
 	// it counts as a wall collision.
 	| doikCollisions, wallCollisions |
+	var d0;
+	var allDoiks;
 
-	"in collisions".postln;
-	doikCollisions.postln;
-	wallCollisions.postln;
+	// For each set of doiks that has collided with another doik:
+	doikCollisions.do({ |doiks|
+		// do the swapping:
+		// the samples of doik[i] gets swapped with doik[i+1]
+		// last one gets wrapped around
+		d0 = doiks[0].samples_;
+		doiks.size.do { |i, d|
+			if (i == (doiks.size - 1), {
+				doiks[doiks.size - 1].samples_ = d0;
+			}, {
+				doiks[i].samples_ = doiks[i+1].samples_;
+			};
+			);
+			allDoiks.add(d);
+		};
 
-	// For each doik that has collided with another doik:
-	doikCollisions.do({
-		|doik|
-		// doik.durBase_ = doik.durBase_ * ~durMultiplier * 2;
-		doik.instruments_.do { |inst|
-			doik.samples_.do { |sample|
-				inst.debug_;
-				sample.debug_;
-				30.do {
-
-						Synth(\sfgrain,
-					[
-						\bufnum, sample.buf_.bufnum,
-						\startPos, inst.posFunc_.value[1], // todo: fix
-						\amp, 0.3,
-						\pan, 1,
-						\dur, inst.durFunc_.value(doik.durBase_);
-					]
-				);
-
-
-
-				}
-
+		// play each of the instruments in the collision
+		doiks.do { |doik|
+			doik.durBase_ = ~durMax.max(doik.durBase_ * ~durMultiplier);
+			doik.instruments_.do { |inst|
+				doik.samples_.do { |sample|
+					{
+						var b, bufnum;
+						b = Buffer.read(s, sample.buf_); // assign to server
+						bufnum = b.bufnum;
+						~grains.do {
+							x = Synth(\sfgrain,
+								[
+									\bufnum, bufnum,
+									\startPos, inst.posFunc_.value[1], // todo: fix
+									\amp, 0.3,
+									\pan, 1,
+									\dur, inst.durFunc_.value(doik.durBase_);
+								]
+							);
+							0.01.rand.wait; // todo
+						};
+					}.fork;
+				};
 			};
 		};
 	});
@@ -128,47 +136,56 @@
 	// For each doik that has collided with a wall:
 	wallCollisions.do({
 		|doik|
-		// doik.durBase_ = doik.durBase_ * ~durMultiplier;
+		doik.durBase_ = ~durMax.max(doik.durBase_ * ~durMultiplier);
+		"New dur base".postln;
+		doik.durBase_.postln;
 		doik.instruments_.do { |inst|
 			doik.samples_.do { |sample|
-				inst.debug_;
-				sample.debug_;
-				20.do {
-					Synth(\sfgrain,
-						[
-							\bufnum, sample.buf_.bufnum,
-							\startPos, inst.posFunc_.value[1], // todo: fix
-							\amp, exprand(0.005,0.1),   // random for now
-							\pan, 1.0.rand,             // random for now
-							\dur, inst.durFunc_.value(doik.durBase_);
-						]
-					);
-				}
+				{
+					var b, bufnum;
+					"reading into buffer".postln;
+					sample.buf_.postln;
+					b = Buffer.read(s, sample.buf_); // assign to server
+
+					~grains * doik.durBase_.rand.do {
+						x = Synth(\sfgrain,
+							[
+								\bufnum, b.bufnum,
+								\startPos, rrand(0.0, 3), // todo: fix
+								\amp, exprand(0.005, 0.1),   // random for now
+								\pan, 1.0.rand,             // random for now
+								\dur, inst.durFunc_.value(doik.durBase_);
+							]
+						);
+						0.05.rand.wait;
+					};
+				}.fork;
 			};
 		};
 	});
+	allDoiks; // for easier processing in grid
 };
 
 /*~playInstWithSamples = {
-	|instruments, samples|
-	s.sync;
-	instruments.do { |inst|
-		samples.do { |sample|
-			inst.debug_;
-			sample.debug_;
-			30.do {
-				Synth(\sfgrain,
-					[
-						\bufnum, sample.buf_.bufnum,
-						\startPos, inst.posFunc_.value[1], // todo: fix
-						\amp, exprand(0.005,0.1),   // random for now
-						\pan, 1.0.rand,             // random for now
-						\dur, inst.durFunc_.value;
-					]
-				);
-			}
-		};
-	};
+|instruments, samples|
+s.sync;
+instruments.do { |inst|
+samples.do { |sample|
+inst.debug_;
+sample.debug_;
+30.do {
+Synth(\sfgrain,
+[
+\bufnum, sample.buf_.bufnum,
+\startPos, inst.posFunc_.value[1], // todo: fix
+\amp, exprand(0.005,0.1),   // random for now
+\pan, 1.0.rand,             // random for now
+\dur, inst.durFunc_.value;
+]
+);
+}
+};
+};
 };*/
 
 

@@ -80,7 +80,7 @@ SynthDef(\sfgrain,
 		var grain;
 
 		grain = PlayBuf.ar(
-			numChannels:1,
+			numChannels:2,
 			bufnum:bufnum,
 			rate:BufRateScale.kr(bufnum),
 			trigger:1,
