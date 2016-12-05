@@ -14,6 +14,9 @@
 	// convert from paths to real samples
 	var convSamples = List.new();
 
+	// init length of grain
+	var durBase = 0.1;
+
 	synths.postln;
 	samples.postln;
 	samples.size.postln;
@@ -23,6 +26,8 @@
 	samples.do { |s|
 		convSamples.add(~sample.(s));
 	};
+
+
 
 
 	// Increment UID counter and assign doik a UID.
@@ -36,6 +41,9 @@
 
 		// Samples that can be played in combo with a Synth
 		samples_: convSamples,
+
+		// durBase
+		durbase_: durBase,
 
 		// 0 (up) 1 (left) 2 (down) 3(right)
 		direction_: direction,
@@ -92,21 +100,27 @@
 	// For each doik that has collided with another doik:
 	doikCollisions.do({
 		|doik|
+		// doik.durBase_ = doik.durBase_ * ~durMultiplier * 2;
 		doik.instruments_.do { |inst|
 			doik.samples_.do { |sample|
 				inst.debug_;
 				sample.debug_;
-				{
-					Synth(\sfgrain,
-						[
-							\bufnum, sample.buf_.bufnum,
-							\startPos, inst.posFunc_.value[1], // todo: fix
-							\amp, exprand(0.005,0.1),   // random for now
-							\pan, 1.0.rand,             // random for now
-							\dur, inst.durFunc_.value;
-						]
-					);
-				}.fork;
+				30.do {
+
+						Synth(\sfgrain,
+					[
+						\bufnum, sample.buf_.bufnum,
+						\startPos, inst.posFunc_.value[1], // todo: fix
+						\amp, 0.3,
+						\pan, 1,
+						\dur, inst.durFunc_.value(doik.durBase_);
+					]
+				);
+
+
+
+				}
+
 			};
 		};
 	});
@@ -114,34 +128,35 @@
 	// For each doik that has collided with a wall:
 	wallCollisions.do({
 		|doik|
+		// doik.durBase_ = doik.durBase_ * ~durMultiplier;
 		doik.instruments_.do { |inst|
 			doik.samples_.do { |sample|
 				inst.debug_;
 				sample.debug_;
-				{
+				20.do {
 					Synth(\sfgrain,
 						[
 							\bufnum, sample.buf_.bufnum,
 							\startPos, inst.posFunc_.value[1], // todo: fix
 							\amp, exprand(0.005,0.1),   // random for now
 							\pan, 1.0.rand,             // random for now
-							\dur, inst.durFunc_.value;
+							\dur, inst.durFunc_.value(doik.durBase_);
 						]
 					);
-				}.fork;
+				}
 			};
 		};
 	});
 };
 
-~playInstWithSamples = {
+/*~playInstWithSamples = {
 	|instruments, samples|
 	s.sync;
 	instruments.do { |inst|
 		samples.do { |sample|
 			inst.debug_;
 			sample.debug_;
-			{
+			30.do {
 				Synth(\sfgrain,
 					[
 						\bufnum, sample.buf_.bufnum,
@@ -151,10 +166,10 @@
 						\dur, inst.durFunc_.value;
 					]
 				);
-			}.fork;
+			}
 		};
 	};
-};
+};*/
 
 
 

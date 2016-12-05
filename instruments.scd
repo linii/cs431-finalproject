@@ -59,7 +59,8 @@
 // example duration functions, make your own!
 
 ~simpleDur = {
-	0.01 + 1.0.rand;
+	|durBase|
+	0.01;
 };
 
 
@@ -74,7 +75,7 @@ SynthDef(\sfgrain,
 		pan = 0.0,
 		startPos = 0.0,
 		amp = 0.1,
-		dur = 0.04;
+		dur = 0.01;
 
 		var grain;
 
@@ -84,7 +85,8 @@ SynthDef(\sfgrain,
 			rate:BufRateScale.kr(bufnum),
 			trigger:1,
 			startPos: BufFrames.ir(bufnum) *  startPos,
-			doneAction: 0) * (EnvGen.kr(Env.perc(0.01, dur), doneAction:2) - 0.001);
+			doneAction: 0
+		) * (EnvGen.kr(Env.perc(0.01, dur), doneAction:2) - 0.001);
 
 		Out.ar(0,Pan2.ar(grain, pan))
 }).add;
