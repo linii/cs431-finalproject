@@ -1,16 +1,24 @@
 // a Sample "class" implemented using a Supercollider environment.
 
 ~sample = {
-	|loc|
-	loc.postln;
+	|s|
+	var loc = s[0];
+	var bufnum = s[1];
+	var bufidx = s[2];
+
 	~id = ~id + 1; // assign sample an id
 
 	(
 		id_: ~id - 1,
+
+		// name of the loc on the file
 		name_: loc,
 
-		// Reference to the sample
-		buf_: thisProcess.nowExecutingPath.dirname +/+ loc,
+		// index into global buffer array
+		idx_: bufidx,
+
+		// Reference to the sample, needed to play
+		buf_: bufnum,
 
 		// Length of the sample in seconds
 		// todo: fix
@@ -41,7 +49,7 @@
 ~stream = "sounds/stream.wav";     // done
 
 // Manmade noises
-~sawing = "sounds/sawing.wav";      // done
+~sawing = "sounds/saw.wav";      // done
 ~ambient = "sounds/restaurant.wav"; // done
 
 // MUSIC

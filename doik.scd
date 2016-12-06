@@ -11,19 +11,18 @@
 ~doik = {
 	|synths, samples, direction, coord|
 
-	// convert from paths to real samples
-	var convSamples = List.new();
-
 	// init length of grain
 	var durBase = ~durBase;
 
-	synths.postln;
-	samples.postln;
-	samples.size.postln;
-	direction.postln;
-	coord.postln;
+	// synths.postln;
+	// samples.postln;
+	// samples.size.postln;
+	// direction.postln;
+	// coord.postln;
 
+	var convSamples = List.new();
 	samples.do { |s|
+		// [loc, bufnum, bufindex]
 		convSamples.add(~sample.(s));
 	};
 
@@ -95,7 +94,7 @@
 		// do the swapping:
 		// the samples of doik[i] gets swapped with doik[i+1]
 		// last one gets wrapped around
-		d0 = doiks[0].samples_;
+/*		d0 = doiks[0].samples_;
 		doiks.size.do { |i, d|
 			if (i == (doiks.size - 1), {
 				doiks[doiks.size - 1].samples_ = d0;
@@ -104,30 +103,29 @@
 			};
 			);
 			allDoiks.add(d);
-		};
+		};*/
 
 		// play each of the instruments in the collision
 		doiks.do { |doik|
-			doik.durBase_ = ~durMax.max(doik.durBase_ * ~durMultiplier);
+			doik.durBase_ = ~durMax.min(doik.durBase_ * ~durMultiplier);
 			doik.instruments_.do { |inst|
 				doik.samples_.do { |sample|
-					{
-						var b, bufnum;
-						b = Buffer.read(s, sample.buf_); // assign to server
-						bufnum = b.bufnum;
-						~grains.do {
-							x = Synth(\sfgrain,
-								[
-									\bufnum, bufnum,
-									\startPos, inst.posFunc_.value[1], // todo: fix
-									\amp, 0.3,
-									\pan, 1,
-									\dur, inst.durFunc_.value(doik.durBase_);
-								]
-							);
-							0.01.rand.wait; // todo
-						};
-					}.fork;
+					if (sample != nil) {
+						{
+							~grains.rand.do {
+								x = Synth(\sfgrain,
+									[
+										\bufnum, sample.buf_,
+										\startPos, inst.posFunc_.value[1], // todo: fix
+										\amp, exprand(0.005, 0.1),
+										\pan, doik.coords_[0]/10,
+										\dur, inst.durFunc_.value(doik.durBase_);
+									]
+								);
+								~waitTime.rand.wait; // todo
+							};
+						}.fork;
+					};
 				};
 			};
 		};
@@ -136,30 +134,31 @@
 	// For each doik that has collided with a wall:
 	wallCollisions.do({
 		|doik|
-		doik.durBase_ = ~durMax.max(doik.durBase_ * ~durMultiplier);
-		"New dur base".postln;
-		doik.durBase_.postln;
+		doik.durBase_ = ~durMax.min(doik.durBase_ * ~durMultiplier);
 		doik.instruments_.do { |inst|
 			doik.samples_.do { |sample|
-				{
-					var b, bufnum;
-					"reading into buffer".postln;
-					sample.buf_.postln;
-					b = Buffer.read(s, sample.buf_); // assign to server
-
-					~grains * doik.durBase_.rand.do {
-						x = Synth(\sfgrain,
-							[
-								\bufnum, b.bufnum,
-								\startPos, rrand(0.0, 3), // todo: fix
-								\amp, exprand(0.005, 0.1),   // random for now
-								\pan, 1.0.rand,             // random for now
-								\dur, inst.durFunc_.value(doik.durBase_);
-							]
-						);
-						0.05.rand.wait;
-					};
-				}.fork;
+				if (sample != nil) {
+					{
+						~grains.rand.do {
+							var d = doik.durBase_;
+							var dur = inst.durFunc_(d);
+/*					"time".post;
+							d.postln;
+							"res".post;
+							dur.postln;*/
+							x = Synth(\sfgrain,
+								[
+									\bufnum, sample.buf_,
+									\startPos, rrand(0.0, 3), // todo: fix
+									\amp, exprand(0.005, 0.1),
+									\pan, 1,             // random for now
+									\dur, dur
+								]
+							);
+							~waitTime * d.rand.wait;
+						};
+					}.fork;
+				};
 			};
 		};
 	});

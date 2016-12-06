@@ -285,13 +285,17 @@
 			"\n".postln;
 			self.size_.do { |i|
 				self.size_.do { |j|
-					"\t[   ".post;
-					self.grid_[j, i].do {
-						//|d|
-						//d.debug_.value;
-						":D".post;
-					};
-					"   ]".post;
+					if (self.grid_[j, i].size == 0, {
+						"\t[    ]".post;
+					}, {
+						"\t[ ".post;
+						self.grid_[j, i].do {
+							//|d|
+							//d.debug_.value;
+							":D".post;
+						};
+						" ]".post;
+					});
 				};
 				"\n\n".postln;
 			};

@@ -1,27 +1,43 @@
 // ============= PARAMETERS ==================
 
 // Size of grid
-~gridSize = 9;
+~gridSize = 6;
 
 // Iteration speed
-~bpm = 200;
+~bpm = 120;
 
 // How quickly the cloud gets dense
-~durMultiplier = 0.5;
+~durMultiplier = 2;
 
 // How long each "grain" can be
-~durMax = 2.0;
+~durMax = 0.8;
 
 // How long each grain is initially
 ~durBase = 0.04;
 
 // How many times each grain is played on collision
-~grains = 1;
+~grains = 30;
+
+// Maximum time to wait between each grain playing
+~waitTime = 0.05;
+
+// Minimum time of all samples, to be safe
+~minLength = 10;
 
 // ============= END PARAMETERS ==================
 /// helps adjust tempo relative to initial BPM
 ~convertBPM = {arg bpm; 30/bpm };
 ~tempo = ~convertBPM.(~bpm);
+
+// init the sample buffers
+~bufnums = List.new();
+~allSamples.do { |loc|
+	b = Buffer.read(s, thisProcess.nowExecutingPath.dirname +/+ loc ); // assign to server
+	b.bufnum.postln;
+	~bufnums.add(b.bufnum);
+};
+
+~bufnums.postln;
 
 // starting grid position
 ~init.(0);
@@ -39,7 +55,6 @@ SystemClock.sched(0.0, {arg time;
 });
 
 
-
 // ------------------------------------------------------------------
 // init configs
 // 0: up   1: left   2: down   3: right
@@ -49,8 +64,6 @@ SystemClock.sched(0.0, {arg time;
 // function to get a new grid
 ~init = {arg mvt;
 	~gridCount = 1;
-	"mvt".postln;
-	mvt.postln;
 
 	case
 	{mvt == 0}{d = ~grid.value(~gridSize, ~initWithParams.(~initParamsA).asArray)}
@@ -61,20 +74,20 @@ SystemClock.sched(0.0, {arg time;
 
 // first init config
 ~initParamsA = [
-	[~instrument.()],
-	[~piano1, ~ambient, ~stream],
-	[0, 0, 1, 3],        // directions
+	[~instrument1, ~instrument1, ~instrument1, ~instrument1], // one for each doik
+	[~piano2, ~edm, ~sawing, ~rain], // one for each doik
+	[0, 0, 1, 3],        // init directions
 	[3, 5, 5, 5],
-	[0, 0, 4, 2]]
-;
+	[0, 0, 4, 2],
+];
 
 // second init config
 ~initParamsB = [
-	[~instrument.()],
-	[~fire, ~sawing, ~piano1, ~pop],
-	[0, 0, 1, 3, 1, 2],
-	[3, 5, 5, 5, 2, 8],  // x-coordinates
-	[0, 0, 4, 2, 4, 2]   // y-coordinates
+	[~instrument1, ~instrument2, ~instrument1, ~instrument2, ~instrument1, ~instrument2],
+	[~fire, ~sawing, ~piano1, ~pop, ~rain, ~edm],
+	[0, 2, 1, 3, 1, 2],
+	[3, 0, 5, 5, 2, 8],  // x-coordinates
+	[0, 1, 4, 2, 4, 2]   // y-coordinates
 ];
 
 // third init config:
@@ -90,12 +103,25 @@ SystemClock.sched(0.0, {arg time;
 ~initWithParams = {
 	|params|
 	var doiks = List.new();
-	params.postln;
+	var sampleArr = List.new();
+
+	// contruct sample array
+	params[1].do { |name|
+		// find the entry by name in the array
+		~allSamples.do { |s, i|
+			s.postln;
+			if (s == name) {
+				sampleArr.add([name, ~bufnums[i], i]);
+			};
+		};
+	};
+
+	sampleArr.postln;
 
 	params[2].size.do{arg i;
 		doiks.add(~doik.value(
-			params[0],
-			params[1],
+			[params[0][i]],
+			sampleArr,  // samples
 			params[2][i],  // direction
 			[params[3][i], params[2][i]]))};  // x & y coords
 	doiks;
