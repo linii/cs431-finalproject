@@ -1,7 +1,7 @@
 // ============= PARAMETERS ==================
 
 // Size of grid
-~gridSize = 6;
+~gridSize = 9;
 
 // Iteration speed
 ~bpm = 120;
@@ -10,16 +10,16 @@
 ~durMultiplier = 2;
 
 // How long each "grain" can be
-~durMax = 0.8;
+~durMax = 0.6;
 
 // How long each grain is initially
-~durBase = 0.04;
+~durBase = 0.02;
 
 // How many times each grain is played on collision
 ~grains = 30;
 
 // Maximum time to wait between each grain playing
-~waitTime = 0.05;
+~waitTime = 0.02;
 
 // Minimum time of all samples, to be safe
 ~minLength = 10;
@@ -45,6 +45,8 @@
 // reset ~gridCount
 ~gridCount = 0;
 
+// s.prepareForRecord; // you have to call this first
+//s.record;
 // play the grid
 SystemClock.sched(0.0, {arg time;
 	~gridCount = ~gridCount + 1;
@@ -53,6 +55,8 @@ SystemClock.sched(0.0, {arg time;
 	("   Grid Count: " + ~gridCount).postln;
 	~tempo // delay before running this function again.
 });
+
+// s.stopRecording;
 
 
 // ------------------------------------------------------------------
@@ -84,7 +88,7 @@ SystemClock.sched(0.0, {arg time;
 // second init config
 ~initParamsB = [
 	[~instrument1, ~instrument2, ~instrument1, ~instrument2, ~instrument1, ~instrument2],
-	[~fire, ~sawing, ~piano1, ~pop, ~rain, ~edm],
+	[~fire, ~stream, ~piano1, ~pop, ~rain, ~ambient],
 	[0, 2, 1, 3, 1, 2],
 	[3, 0, 5, 5, 2, 8],  // x-coordinates
 	[0, 1, 4, 2, 4, 2]   // y-coordinates
@@ -93,11 +97,11 @@ SystemClock.sched(0.0, {arg time;
 // third init config:
 // squares in diagonal pattern
 ~initParamsC = [
-	[~instrument.()],
-	[~stream, ~ambient, ~piano2],
-	[0, 1, 2, 3, 0, 0, 1, 1, 0, 1, 2, 3, 0],
-	[0, 0, 1, 0, 1, 1, 2, 3, 4, 5, 6, 7, 8],
-	[0, 0, 1, 0, 1, 1, 2, 3, 4, 5, 6, 7, 8].scramble
+	Array.fill(9, {~instrument1}),
+	~allSamples,
+	[0, 1, 2, 3, 0, 0, 1, 1],
+	[0, 1, 2, 3, 4, 5, 6, 7, 8],
+	[0, 1, 2, 3, 4, 5, 6, 7, 8].scramble
 ];
 
 ~initWithParams = {

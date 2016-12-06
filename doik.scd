@@ -142,10 +142,6 @@
 						~grains.rand.do {
 							var d = doik.durBase_;
 							var dur = inst.durFunc_(d);
-/*					"time".post;
-							d.postln;
-							"res".post;
-							dur.postln;*/
 							x = Synth(\sfgrain,
 								[
 									\bufnum, sample.buf_,

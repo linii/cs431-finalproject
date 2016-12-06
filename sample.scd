@@ -63,7 +63,7 @@
 
 ~allSamples = [
 	~rain, ~fire, ~stream,
-	~sawing, ~ambient, ~voice,
+	~sawing, ~ambient,
 	~piano1, ~piano2,
 	~edm, ~pop
 ];
