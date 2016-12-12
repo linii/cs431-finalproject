@@ -1,3 +1,31 @@
+// ------------------------------------------------------------------
+// example SynthDefs
+
+// Basic grain
+// Source: http://composerprogrammer.com/teaching/supercollider/sctutorial/5.2 Granular Synthesis.html
+
+SynthDef(\sfgrain,
+	{arg bufnum = 0,
+		pan = 0.0,
+		startPos = 0.0,
+		amp = 0.1,
+		dur = 0.04;
+
+		var grain;
+
+		grain = PlayBuf.ar(
+			numChannels:2,
+			bufnum:bufnum,
+			rate:BufRateScale.kr(bufnum),
+			trigger:1,
+			startPos: BufFrames.ir(bufnum) *  startPos,
+			doneAction: 0
+		) * (EnvGen.kr(Env.perc(0.01, dur), doneAction:2) - 0.001);
+
+		Out.ar(0,Pan2.ar(grain, pan))
+}).add;
+
+
 // ~id is a global counter that assigns each instantiated Doik a unique
 // id. We increment it on the creation of a Doik.
 ~id = 0;
@@ -9,22 +37,8 @@
 // 3. starting direction
 // 4. initial coordinate
 ~doik = {
-	|synths, samples, direction, coord|
+	|instrument, sample_bufnum, direction, coords|
 
-	// init length of grain
-	var durBase = ~durBase;
-
-	// synths.postln;
-	// samples.postln;
-	// samples.size.postln;
-	// direction.postln;
-	// coord.postln;
-
-	var convSamples = List.new();
-	samples.do { |s|
-		// [loc, bufnum, bufindex]
-		convSamples.add(~sample.(s));
-	};
 
 	// Increment UID counter and assign doik a UID.
 	~id = ~id + 1;
@@ -33,17 +47,14 @@
 		id_: ~id - 1,
 
 		// Instrument/synth, aka grain definitions contained in doik
-		instruments_: synths,
+		instrument_: instrument,
 
 		// Samples that can be played in combo with a Synth
-		samples_: convSamples,
-
-		// durBase
-		durBase_: durBase,
+		sample_: sample_bufnum,
 
 		// 0 (up) 1 (left) 2 (down) 3(right)
 		direction_: direction,
-		coords_: coord,
+		coords_: coords,
 
 		// These are all statistics collected on the doik as it moves through
 		// the grid
@@ -106,7 +117,7 @@
 		};*/
 
 		// play each of the instruments in the collision
-		doiks.do { |doik|
+/*		doiks.do { |doik|
 			doik.durBase_ = ~durMax.min(doik.durBase_ * ~durMultiplier);
 			doik.instruments_.do { |inst|
 				doik.samples_.do { |sample|
@@ -128,60 +139,24 @@
 					};
 				};
 			};
-		};
+		};*/
 	});
-
 	// For each doik that has collided with a wall:
 	wallCollisions.do({
 		|doik|
-		doik.durBase_ = ~durMax.min(doik.durBase_ * ~durMultiplier);
-		doik.instruments_.do { |inst|
-			doik.samples_.do { |sample|
-				if (sample != nil) {
-					{
-						~grains.rand.do {
-							var d = doik.durBase_;
-							var dur = inst.durFunc_(d);
-							x = Synth(\sfgrain,
-								[
-									\bufnum, sample.buf_,
-									\startPos, rrand(0.0, 3), // todo: fix
-									\amp, exprand(0.005, 0.1),
-									\pan, 1,             // random for now
-									\dur, dur
-								]
-							);
-							~waitTime * d.rand.wait;
-						};
-					}.fork;
-				};
+			doik.instrument_.score_.do { |note, idx|
+				SystemClock.sched(note[0], {
+					x = Synth(\sfgrain,
+						[
+							\bufnum, doik.sample_,
+							\startPos, note[1],
+							\amp, exprand(0.005, 0.1),
+							\dur, note[2],
+						]
+					);
+				});
 			};
-		};
 	});
 	allDoiks; // for easier processing in grid
 };
-
-/*~playInstWithSamples = {
-|instruments, samples|
-s.sync;
-instruments.do { |inst|
-samples.do { |sample|
-inst.debug_;
-sample.debug_;
-30.do {
-Synth(\sfgrain,
-[
-\bufnum, sample.buf_.bufnum,
-\startPos, inst.posFunc_.value[1], // todo: fix
-\amp, exprand(0.005,0.1),   // random for now
-\pan, 1.0.rand,             // random for now
-\dur, inst.durFunc_.value;
-]
-);
-}
-};
-};
-};*/
-
-
 
