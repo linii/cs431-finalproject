@@ -5,16 +5,44 @@ var exponentialDecay = Array.fill(100, {|i| [exprand(0.01, 1), i/100, 1.0]});
 
 var long = Array.fill(100, {|i| [10*i/100, 0.5, 1.0]});
 
-var randomcloud = Array.fill(1000, |i| [2*i/1000, 1.0.rand, 0.01]});
+var randomcloud = Array.fill(20, {|i| [0.5*i/20, 1.0.rand, [0.01, 0.05, 0.25].choose]});
+
+var zip = {Array.fill(20, {|i| [1 - (1/2.pow(i)), 1.0.rand, 0.5]})};
+
+var zipper = {
+	var s1 = 1.0.rand;
+	var s2 = 1.0.rand;
+	var zip1 = Array.fill(10, {
+		|i|
+		[1 - (1/3.pow(i/2)), s1, 0.5]
+	});
+	var zip2 = Array.fill(10, {
+		|i|
+		[1.1 * (1 - (1/3.pow(i/2))) + 0.2, s2, 0.5]
+	});
+	(zip1 ++ zip2).sort({|a, b| a[0] < b[0]});
+};
+
+var linearZipper = {
+	var s1 = 1.0.rand;
+	var s2 = 1.0.rand;
+	var zip1 = Array.fill(25, {
+		|i|
+		[i*0.2, s1, i*0.2]
+	});
+	var zip2 = Array.fill(25, {
+		|i|
+		[i*0.22, s1, i*0.2]
+	});
+	(zip1 ++ zip2).sort({|a, b| a[0] < b[0]});
+};
 
 // an Instrument "class" implemented using a Supercollider environment.
 
 ~instrument = {
 	|score|
 	(
-		id_: ~id - 1,
-
-		score_: score.sort({|a, b| a[0] < b[0]}),
+		score_: score,
 
 		// Debug function to print information about the sample
 		debug_: {
@@ -36,6 +64,9 @@ var randomcloud = Array.fill(1000, |i| [2*i/1000, 1.0.rand, 0.01]});
 ~instrument1 = ~instrument.(defaultScore);
 ~instrument2 = ~instrument.(exponentialDecay);
 ~instrument3 = ~instrument.(long);
+~instrument4 = ~instrument.(randomcloud);
+~instrument5 = ~instrument.(zip);
+~instrument_zipper = ~instrument.(zipper);
 
 
 

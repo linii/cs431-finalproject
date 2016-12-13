@@ -1,19 +1,19 @@
 // first init config
 ~initParamsA = [
-	[~instrument1], // one for each doik
-	[~piano1], // one for each doik
-	[0],        // init directions
-	[0],
-	[0],
+	[~instrument5, ~instrument5], // one for each doik
+	[~piano2, ~sawing], // one for each doik
+	[0,0],        // init directions
+	[0,1],
+	[0,0],
 ];
 
 
 ~initParamsB = [
-	[~instrument1, ~instrument2],
-	[~piano1, ~sawing],
-	[0, 0],
-	[0, 4],
-	[0, 4]
+	[~instrument1, ~instrument4, ~instrument4],
+	[~piano1, ~piano1, ~sawing],
+	[0, 0, 0],
+	[0, 4, 5],
+	[0, 4, 5]
 ];
 
 
@@ -44,7 +44,7 @@
 ~tempo = ~convertBPM.(~bpm);
 
 // starting grid position
-~init.(1);
+~init.(0);
 
 // reset ~gridCount
 ~gridCount = 0;

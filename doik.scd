@@ -144,7 +144,8 @@ SynthDef(\sfgrain,
 	// For each doik that has collided with a wall:
 	wallCollisions.do({
 		|doik|
-			doik.instrument_.score_.do { |note, idx|
+		var notes = if (doik.instrument_.score_.isFunction, {doik.instrument_.score_.value},{doik.instrument_.score_});
+			notes.do { |note, idx|
 				SystemClock.sched(note[0], {
 					x = Synth(\sfgrain,
 						[
@@ -159,4 +160,6 @@ SynthDef(\sfgrain,
 	});
 	allDoiks; // for easier processing in grid
 };
+
+
 
