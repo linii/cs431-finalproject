@@ -5,32 +5,59 @@
 // Random configuration
 var doikControls =  List.new();
 ~allSamples = [
-	"rain",
-	"fire",
-	"stream",
-	"saw",
-	"ambient (restaurant)",
-	"piano1 (Philip Glass)",
-	"piano2 (anime OST)",
-	"edm (Shelter, Porter Robinson)",
-	"pop (Closer)"
+	\rain,
+	\fire,
+	\stream,
+	\saw,
+	\ambient_restaurant,
+	\piano1__PhilipGlass,
+	\piano2__animeOST,
+	\edm__ShelterPorterRobinson,
+	\pop__Closer
 ];
 
 ~allInstruments = [
-	"defaultScore",
-	"exponential decay",
-	"long",
-	"random cloud",
-	"zipper",
-	"linear zipper"
+	\default_score,
+	\exponential_decay,
+	\long,
+	\random_cloud,
+	\zipper,
+	\linear_zipper
 ];
+
+~insts = ();
+~insts.putPairs(
+	[
+		\default_score, ~instrument1,
+		\exponential_decay, ~instrument2,
+		\long, ~instrument3,
+		\random_cloud, ~instrument4,
+		\zipper, ~instrument5,
+		\linear_zipper, ~instrument_zipper
+	]
+);
+
+
+~samples = ();
+~samples.putPairs([
+	\rain, ~rain,
+	\fire, ~fire,
+	\stream, ~stream,
+	\saw, ~sawing,
+	\ambient_restaurant, ~ambient,
+	\piano1__PhilipGlass, ~piano1,
+	\piano2__animeOST, ~piano2,
+	\edm__ShelterPorterRobinson, ~edm,
+	\pop__Closer, ~pop
+]);
+
 
 ~h = 600;
 ~w = 900;
 
 w = Window.new("Granular synthesis automata controller", Rect(50,200,~w,~h));
 w.background = Color.white;
-w.alpha = 0.9;
+w.alpha = 0.95;
 // w.view.decorator = f = FlowLayout(w.view.bounds);
 
 ~getID = {
@@ -46,7 +73,7 @@ w.alpha = 0.9;
 //---------------------------- tempo slider help text  -----------------------------
 l = StaticText.new(w,Rect(~offset, 0, ~w, ~bHeight + 50));
 l.stringColor = Color.red;
-l.string_("Instructions: click on grid squares to select direction of doik. Instrument, sample opts on the right (corresponding to color).\nClick START when ready. To restart, rearrange config and click START. (For random opt, input # of rand doiks and click Random.)");
+l.string_("Instructions: click on grid squares to select direction of doik. Instrument, sample opts on the right (corresponding to color).\nClick LOAD GRID when ready. To restart, rearrange config and click LOAD GRID. (For random opt, input # of rand doiks and click Random.)");
 
 
 //==================================================================================
@@ -76,6 +103,14 @@ l.string_("Instructions: click on grid squares to select direction of doik. Inst
 		inst_: inst,
 		inst_idx_: instIdx,
 		bpm_: bpm,
+		debug_: { |self|
+			"dir: ".post;
+			self.dir_.post;
+			"  | sample: ".post;
+			self.sample_.post;
+			"  | inst: ".post;
+			self.inst_.postln;
+		}
 	)
 };
 
@@ -100,7 +135,6 @@ Library.put(\dict, ~dict);
 	var but = Button.new(w, Rect(~offset + (~size * i),
 		(~offset * 4) + (~size * j),
 		~size, ~size));
-	but.identityHash.postln;
 
 	newDoik = ~guiDoik.value(~counter, d, i, j, -1);
 	~dict.add(but.identityHash -> newDoik);
@@ -110,8 +144,8 @@ Library.put(\dict, ~dict);
 		["-"],
 		["^", newDoik.textColor_, newDoik.color_],
 		["<", newDoik.textColor_, newDoik.color_],
-		[">", newDoik.textColor_, newDoik.color_],
 		["v", newDoik.textColor_, newDoik.color_],
+		[">", newDoik.textColor_, newDoik.color_],
 	]);
 
 	but.action_({ |v|
@@ -133,13 +167,15 @@ Library.put(\dict, ~dict);
 		switch(v.value,
 			0, {
 				"Deleting.".postln;
+				z[h].active_ = False;
 			},
 			{
 				"Changing direction to: ".post;
 				v.value.postln;
-				z[h].dir_ = v.value;
+				z[h].dir_ = v.value - 1;
 			}
 		);
+
 		doik = z[h];
 		z.add(h -> doik);
 		Library.put(\dict, z);
@@ -238,11 +274,11 @@ Library.put(\dict, ~dict);
 t = TextField(w,Rect(~coor.(0), ~y1, ~bWidth, ~bHeight));
 t.string = "# random";
 t.stringColor = Color.gray;
-t.background = Color.black;
+t.background = Color.white;
 
 t.action_({
 	|f|
-	"# random doiks to be generated: ".post;
+	"  # random doiks: ".post;
 	~numRandom = f.value.asInteger;
 	~numRandom.postln;
 });
@@ -267,7 +303,7 @@ r.action_({
 y = Button.new(w,Rect(~coor.(0), ~y2, ~bWidth, ~bHeight));
 p.font_("Courier");
 y.states_([
-	["Start", Color.blue, Color.green]]);
+	["Load grid", Color.blue, Color.green]]);
 
 y.action_({ |v|
 	~initAll.();
@@ -283,19 +319,12 @@ p.states_([
 p.action_({ |v|
 	switch(v.value,
 		0, {
-			if (~start == False) {
-				~start = True;
-				// init everything
-
-			};
 			"playing".postln;
 			~state = \play;
 
-
 		}, {
 			"paused".postln;
-			~state = \paused;
-
+			~state = \pause;
 		}
 	);
 });
@@ -309,6 +338,7 @@ t.action_({ |b|
 	tem.postln;
 	~tempo = ~convertBPM.(tem);
 });
+t.value = 0.5;
 
 //---------------------------- tempo slider help text  -----------------------------
 l = StaticText.new(w,Rect(~coor.(3), ~y2, 200, ~bHeight));
@@ -318,23 +348,26 @@ l.string_("bpm: [80, 180]");
 //==================================================================================
 //---------------------------- callback funcs --------------------------------------
 
-~addAllDoiks = {
-	var doiks = List.new();
-	~doiks.do { |i, d|
-		// add each of them to the grid
-		doiks.add(~doik.value(
-			d[2], // Direction
-			d[3], // Instrument
-			d[4], // Sample
-			[d[0], d[1]]));  // x & y coords
-	};
-	d = ~grid.value(~gridSize, doiks.asArray);
-};
 
 //---------------------------- init function  --------------------------------------
 ~initAll = {
-
-
+	// extract all doiks from the dirctionary, and add them to the grid
+	var dict = Library.at(\dict);
+	var doiks = List.new();
+	var grd;
+	dict.do{ |d, i|
+		if (d.active_ == True) {
+			d.debug_;
+			doiks.add(~doik.value(
+				~insts[d.inst_], // Instrument
+				~samples[d.sample_], // Sample
+				d.dir_, // Direction
+				d.coor_));  // x & y coords
+		}
+	};
+	grd = ~grid.value(~gridSize, doiks.asArray);
+	~state = \play;
+	~play.(grd).fork;
 };
 
 w.front;

@@ -1,19 +1,19 @@
 // first init config
 ~initParamsA = [
-	[~instrument5, ~instrument5], // one for each doik
-	[~piano2, ~sawing], // one for each doik
-	[0,0],        // init directions
-	[0,1],
-	[0,0],
+	[~instrument1, ~instrument5], // one for each doik
+	[~piano1, ~sawing], // one for each doik
+	[0,1],        // init directions
+	[0,7],
+	[0,2],
 ];
 
 
 ~initParamsB = [
-	[~instrument1, ~instrument4, ~instrument4],
-	[~piano1, ~piano1, ~sawing],
-	[0, 0, 0],
-	[0, 4, 5],
-	[0, 4, 5]
+	[~instrument_zipper],
+	[~sawing],
+	[0],
+	[0],
+	[0]
 ];
 
 
@@ -36,7 +36,7 @@
 ~gridSize = 9;
 
 // Iteration speed
-~bpm = 120;
+~bpm = 150;
 
 // ============= END PARAMETERS ==================
 /// helps adjust tempo relative to initial BPM
@@ -52,13 +52,19 @@
 // s.prepareForRecord; // you have to call this first
 //s.record;
 // play the grid
-SystemClock.sched(0.0, {arg time;
-	~gridCount = ~gridCount + 1;
-	d.next_;
+~play = {
+	|grid|
+	SystemClock.sched(0.0, {arg time;
+		if (~state == \play) {
+			~gridCount = ~gridCount + 1;
+			grid.next_;
 
-	("   Grid Count: " + ~gridCount).postln;
-	~tempo // delay before running this function again.
-});
+			("   Grid Count: " + ~gridCount).postln;
+		}
+		~tempo // delay before running this function again.
+	});
+};
+~play.(d);
 
 // s.stopRecording;
 
