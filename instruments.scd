@@ -105,3 +105,21 @@ var seek = {
 ~instrument_linearzipper = ~instrument.(linearZipper);
 ~instrument_lengthen = ~instrument.(lengthen);
 ~instrument_seek = ~instrument.(seek);
+
+// dict for GUI
+~insts = ();
+~insts.putPairs(
+	[
+		\default_score, ~instrument1,
+		\exponential_decay, ~instrument2,
+		\long, ~instrument_long,
+		\random_cloud, ~instrument4,
+		\zip, ~instrument5,
+		\zipper, ~instrument_zipper,
+		\linear_zipper, ~instrument_linearzipper,
+		\lengthen, ~instrument_lengthen,
+		\seek, ~instrument_seek,
+	]
+);
+
+~allInstruments = ~insts.keys.asArray;

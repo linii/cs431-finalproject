@@ -1,16 +1,21 @@
-# Computer Music final project
-### Stages
-    - grid works
-    - add instrument, samples; works without swapping
-    - works with swapping
+# (CS431: Computer Music) final project
 
-### TODOS:
-    - Gather audio samples
-    - Gather / experiment with instrument samples
-    - Write collision code
-    - Play around with parameters (dur multiplier, collision rules)
-    - Make GUI
+## Overview
 
-Team members:
+## Running with GUI
+
+1. Boot server.
+2. Evaluate: `doik.scd`, `grid.scd`, `instrument.scd`, `samples.scd`, `player.scd`
+3. Evaluate `gui.scd`
+4. The GUI is designed to faciliate semi-live production of music. The grid will not update live, but you can:
+    - pause and add new doiks
+    - drop new doiks as the music is playing, initiated with a random direction.
+    - dynamically change the bpm
+
+## Sounds
+
+can be found under the `sounds/` folder.
+
+**Team members:**
 Marcus Russi
 Lining Wang

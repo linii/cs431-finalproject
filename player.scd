@@ -55,14 +55,18 @@
 ~play = {
 	|grid|
 	SystemClock.sched(0.0, {arg time;
-		if (~state == \play) {
-			~gridCount = ~gridCount + 1;
-			grid.next_;
+		block { |break|
+			if (~curGridID != grid.identityHash) {
+				break.value(1);
+			};
+			if (~state == \play) {
+				~gridCount = ~gridCount + 1;
+				grid.next_;
 
-			("   Grid Count: " + ~gridCount).postln;
-		};
-		~tempo; // delay before running this function again.
-
+				("   Grid Count: " + ~gridCount).postln;
+			};
+			~tempo; // delay before running this function again.
+		}
 	});
 };
 // ~play.(d);

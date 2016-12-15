@@ -1,28 +1,70 @@
-~load = {
-	|path|
-	Buffer.read(s, thisProcess.nowExecutingPath.dirname +/+ path)
+~sounds = "sounds";
+~load = { |path|
+	Buffer.read(s, thisProcess.nowExecutingPath.dirname +/+ ~sounds +/+ path)
 };
 
 // AMBIENT
 // Natural sounds
-~rain = ~load.("sounds/rain.wav");         // done
-~fire = ~load.("sounds/fire.wav");         // done
-~stream = ~load.("sounds/stream.wav");     // done
+~rain = ~load.("rain.wav");
+~fire = ~load.("fire.wav");
+~stream = ~load.("stream.wav");
+~storm = ~load.("storm_with_rain.wav");
+~wind = ~load.("wind.wav");
 
 // Manmade noises
-~sawing = ~load.("sounds/saw.wav");      // done
-~ambient = ~load.("sounds/restaurant.wav"); // done
+~breathing = ~load.("breathing.wav");
+~sawing = ~load.("saw.wav");
+~ambient = ~load.("restaurant.wav");
+~trail = ~load.("trail.wav");
+~city = ~load.("city.wav");
+~bg = ~load.("bg.wav");
+
+// Misc
+~computer = ~load.("computer.wav");
+~spaceship = ~load.("spaceship.wav");
+~bubbles = ~load.("bubbles.wav");
 
 // MUSIC
 // Instruments (solo / w/ accompaniment)
-~piano1 = ~load.("sounds/glass.wav");        // done
-~piano2 = ~load.("sounds/yuri_on_ice.wav");         // done :D
+~piano1 = ~load.("glass.wav");
+~piano2 = ~load.("y_o_i.wav");
+~orchestra = ~load.("orchestra.wav");
 
 // Songs
-~edm = ~load.("sounds/shelter.wav");     // done
-~pop = ~load.("sounds/closer.wav");     // done
+~edm = ~load.("shelter.wav");
+~pop = ~load.("closer.wav");
+~alt = ~load.("no.wav");
+~alt2 = ~load.("heartbeat.wav");
+~alt3 = ~load.("takecare.wav");
 
-~computer = ~load.("sounds/computer.wav");
-~spaceship = ~load.("sounds/spaceship.wav");
-~bubbles = ~load.("sounds/bubbles.wav");
+~samples = ();
+~samples.putPairs([
+	\rain, ~rain,
+	\fire, ~fire,
+	\stream, ~stream,
+	\storm, ~storm,
+	\wind, ~wind,
 
+	\computer, ~computer,
+	\spaceship, ~spaceship,
+	\bubbles, ~bubbles,
+
+	\breathing, ~breathing,
+	\saw, ~sawing,
+	\ambient_restaurant, ~ambient,
+	\hiking_trail, ~trail,
+	\city, ~city,
+	\bg, ~bg,
+
+	\piano1__Metamorphosis_PhilipGlass, ~piano1,
+	\piano2__animeOST, ~piano2,
+	\orchestra_Miyazaki, ~orchestra,
+
+	\edm__Shelter_PorterRobinson, ~edm,
+	\pop__Closer, ~pop,
+	\alt__No_NicholasJaar, ~alt,
+	\alt__Heartbeat_Annie, ~alt2,
+	\alt__TakeCare_BeachHouse, ~alt3
+]);
+
+~allSamples = ~samples.keys.asArray;

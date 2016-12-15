@@ -1,89 +1,35 @@
 // GUI
-// Ability to add/remove doiks
-// Select sample, instrument, and bpm (stretch goal) for each doik
-// Ability to start/stop playing, + overall bpm
-// Random configuration
-~allSamples = [
-	\rain,
-	\fire,
-	\stream,
-	\saw,
-	\computer,
-	\spaceship,
-	\bubbles,
-	\ambient_restaurant,
-	\piano1__PhilipGlass,
-	\piano2__animeOST,
-	\edm__ShelterPorterRobinson,
-	\pop__Closer
-];
-
-~allInstruments = [
-	\default_score,
-	\exponential_decay,
-	\long,
-	\random_cloud,
-	\zipper,
-	\zip,
-	\linear_zipper,
-	\lengthen,
-	\seek
-];
-
-~insts = ();
-~insts.putPairs(
-	[
-		\default_score, ~instrument1,
-		\exponential_decay, ~instrument2,
-		\long, ~instrument3,
-		\random_cloud, ~instrument4,
-		\zip, ~instrument5,
-		\zipper, ~instrument_zipper,
-		\linear_zipper, ~instrument_linearzipper,
-		\lengthen, ~instrument_lengthen,
-		\seek, ~instrument_seek,
-	]
-);
-
-~samples = ();
-~samples.putPairs([
-	\rain, ~rain,
-	\fire, ~fire,
-	\stream, ~stream,
-	\saw, ~sawing,
-	\computer, ~computer,
-	\spaceship, ~spaceship,
-	\bubbles, ~bubbles,
-	\ambient_restaurant, ~ambient,
-	\piano1__PhilipGlass, ~piano1,
-	\piano2__animeOST, ~piano2,
-	\edm__ShelterPorterRobinson, ~edm,
-	\pop__Closer, ~pop
-]);
+// Ability to add/remove doiks on a graphic grid,
+//     Select sample, instrument for each doik while paused or before clicking LOAD GRID
+//     Or, can select placement of new doik while playing.
+// Ability to choose random configuration
 
 
-~h = 600;
-~w = 900;
+// height and width of the window
+~h = 550;
+~w = 750;
 ~offset = 15;
 
-~bWidth = 100;
+// button width and height for main buttons
+~bWidth = 90;
 ~bHeight = 30;
+~mainBuf = 10;
 
-~width = 190;
+// Offsets for main buttons
+~bX = 15;
+~bY = 450;
+
+// button width and height for sample attributes to the right
+~width = 150;
 ~height = 20;
-~slideWidth = 75;
 ~buf = 5;
 
-~bX = 15;
-~bY = 500;
-~mainBuf = 15;
-
-~numRandom = 3;
+// default number of random doiks generated when clicking random
+~numRandom = 5;
 
 w = Window.new("Granular synthesis automata controller", Rect(50,200,~w,~h));
 w.background = Color.white;
-w.alpha = 0.95;
-// w.view.decorator = f = FlowLayout(w.view.bounds);
+w.alpha = 0.9;
 
 ~getID = {
 	|obj|
@@ -96,7 +42,6 @@ w.alpha = 0.95;
 };
 
 
-
 //==================================================================================
 //---------------------------- instruction text-------------------------------------
 
@@ -104,12 +49,13 @@ w.alpha = 0.95;
 l = StaticText.new(w,Rect(~offset, 0, ~w, ~bHeight + 50));
 
 l.stringColor = Color.red;
-l.string_("Instructions: click on grid squares to select direction of doik. Instrument, sample opts on the right (corresponding to color).\nClick LOAD GRID when ready. To restart, rearrange config and click LOAD GRID. (For random opt, input # of rand doiks and click Random.)");
+l.string_("Instructions: Click on grid squares to select direction of doik; instrument, sample opts on right (corresponding to color).\nClick LOAD GRID when ready. You cannot change doik opts after loading or playing after pause. \nLive input: drop in doiks while PLAYING w rand. direction / sample / instrument, \nor click PAUSE, add doiks, customize dir, etc. then PLAY. For random opt, input # of rand doiks and click Random.");
 
 
 //==================================================================================
 //---------------------------- create grid -----------------------------------------
 
+// Representation of a doik in its GUI form.
 ~guiDoik = {
 	|id, button, i, j, dir|
 	var color = Color.rand;
@@ -145,82 +91,118 @@ l.string_("Instructions: click on grid squares to select direction of doik. Inst
 	)
 };
 
-//---------------------------- basic button  ---------------------------------------
+//---------------------------- basic grid button  ------------------------------------
 
-~gridSize.do{ |i|
-	~gridSize.do{ |j|
-		~createButton.(i, j);
-	}
-};
-
-Library.put(\dict, ~dict);
 ~size = (~h - 200) / ~gridSize;
-~dict = Dictionary.new;
+~dict = Dictionary.new; // start new dictionary for doiks
 ~num = 0; // number of doiks currently active
 ~counter = 0; // for assigning unique ID's
 
+// instantiate grid, with the default direction/state of -1/0
+~makeGrid = {
+	~gridSize.do{ |i|
+		~gridSize.do{ |j|
+			~createButton.(i, j, -1);
+		}
+	};
+};
+
+~makeGrid.();
+Library.put(\dict, ~dict);
+~state = \stopped;
+
 ~createButton = {
-	|i, j|
+	arg i, j, dir;
 	var newDoik;
 	var but = Button.new(w, Rect(~offset + (~size * i),
-		(~offset * 4) + (~size * j),
-		~size, ~size));
+		(~offset * 5) + (~size * j), ~size, ~size));
 
-	newDoik = ~guiDoik.value(~counter, d, i, j, -1);
+	newDoik = ~guiDoik.value(~counter, d, i, j, dir);
+	if (dir != -1) {
+		// indicates it's from random function;
+		newDoik.active_ = True;
+	};
+
 	~dict.add(but.identityHash -> newDoik);
+
+	// update id counter
 	~counter = ~counter + 1;
 
 	but.states_([
-		["-"],
+		["-", Color.clear, Color.white],
 		["^", newDoik.textColor_, newDoik.color_],
 		["<", newDoik.textColor_, newDoik.color_],
 		["v", newDoik.textColor_, newDoik.color_],
 		[">", newDoik.textColor_, newDoik.color_],
 	]);
 
+	// init with default direction.
+	but.value = dir + 1;
+
+	// what the button does when it is clicked
 	but.action_({ |v|
 		var doik;
 		var h = but.identityHash;
 		z = Library.at(\dict);
-		h.postln;
-		z[h].postln;
 
-
-		if ((z[h].active_ == False) &&
-			((v.value == 1) || (v.value == 2) || (v.value == 3) || (v.value == 4))) {
-			"adding doik ".post;
-			~addDoikGUI.(h, ~num);
-			~num = ~num + 1;
-			z[h].active_ = True;
-		};
-
+		// once clicked, update internal state.
 		switch(v.value,
 			0, {
-				"Deleting.".postln;
+				"\tDeleting.".postln;
 				z[h].active_ = False;
 			},
 			{
-				"Changing direction to: ".post;
+				"\tChanging direction to: ".post;
 				v.value.postln;
 				z[h].dir_ = v.value - 1;
 			}
 		);
 
-		doik = z[h];
-		z.add(h -> doik);
+		// once clicked & not deleted, add to GUI with background color, etc
+		if ((z[h].active_ == False) && (v.value != 0) &&
+			((v.value == 1) || (v.value == 2) || (v.value == 3) || (v.value == 4))) {
+			~addDoikGUI.(h, ~num);
+			~num = ~num + 1;
+			z[h].active_ = True;
+
+			// nothing else needs to be done, doiks loaded when Load Grid clicked
+			if (~state == \stopped, {
+				"STOPPED, adding initdoik, default direction is ^ ".post;
+			}, {
+				var i = z[h].coor_[0];
+				var j = z[h].coor_[1];
+
+				// else, drop in doik with random direction
+				if (~state == \play, {
+					z[h].dir_ = (0..3).choose;
+
+					"PLAYING: adding doik on the fly to grid, with random direction ".postln;
+					but.value = z[h].dir_ + 1; // need to make it reflect graphically
+					~grd.grid_[i, j].add(~toDoik.(z[h]));
+				}, {
+					// or, remind self to update when you click play
+					"PAUSED: adding doik while paused, ".post;
+					"will add to grid upon clicking PLAY".postln;
+				});
+			});
+		};
+
+		// update environment
 		Library.put(\dict, z);
 	});
+	but;
 };
 
-//---------------------------- add doik gui  ---------------------------------------
 
+//---------------------------- add doik gui  ---------------------------------------
 ~addDoikGUI = { |h, n|
-	var lib = Library.at(\dict);
-	var yval = (~height + ~buf) * (n + 1) + 40;
+	var lib = Library.at(\dict); // load current dictionary
+	var yval = (~height + ~buf) * (n + 1) + 60;
 
 	var color = lib[h].color_;
 	var lighter = lib[h].textColor_;
 
+	// do some array swapping lol
 	var c1 = Array.newFrom(~allSamples);
 	var c2 = Array.newFrom(~allInstruments);
 	var item1 = c1.removeAt(lib[h].sample_idx_);
@@ -228,23 +210,20 @@ Library.put(\dict, ~dict);
 	c1 = [item1] ++ c1;
 	c2 = [item2] ++ c2;
 
-	~cO = 460;
+	// X offset, width, and buffer for the right option selections
+	~cO = 400;
 	~cW = ~width;
 	~cB = 10;
 
 	//---------------------------- sample selection dropdown -----------------------
 	b = PopUpMenu.new(w, Rect(~coor.(0), yval, ~width, ~height));
-	b.items_(c1 ++ ["add your own"]);
+	b.items_(c1);
 	b.background_(color);
 	b.stringColor_(lighter);
 	b.action_({|v|
-		if (v.value == (~allSamples.size), {
-			"todo: allow upload of files".postln;
-		}, {
-			lib[h].sample_ = c1[v.value];
-			"Changed sample to: ".post;
-			lib[h].sample_.postln;
-		});
+		lib[h].sample_ = c1[v.value];
+		"\tChanged sample to: ".post;
+		lib[h].sample_.postln;
 	});
 
 	//---------------------- instrument selection dropdown -------------------------
@@ -254,18 +233,9 @@ Library.put(\dict, ~dict);
 	i.stringColor_(lighter);
 	i.action_({|v|
 		lib[h].inst_ = c2[v.value];
-		"Changed instrument to: ".post;
+		"\tChanged instrument to: ".post;
 		lib[h].inst_.postln;
 	});
-
-	//-------------------------------- tempo slider --------------------------------
-/*	a = Slider.new(w,Rect(~coor.(2), yval, ~slideWidth, ~height));
-	a.action_({ |a|
-		var tem = a.value * 100 + 80;
-		"New bpm: ".post;
-		tem.postln;
-		lib[h].bpm_ = tem;
-	});*/
 };
 
 //==================================================================================
@@ -279,14 +249,13 @@ Library.put(\dict, ~dict);
 ~cW = ~bWidth;
 ~cB = ~mainBuf;
 
-//---------------------------- random config num slider  ---------------------------
+//---------------------------- random config num text box  --------------------------
 t = TextField(w,Rect(~coor.(0), ~y1, ~bWidth, ~bHeight));
 t.string = "# random";
 t.stringColor = Color.gray;
 t.background = Color.white;
 
-t.action_({
-	|f|
+t.action_({ |f|
 	"  # random doiks: ".post;
 	~numRandom = f.value.asInteger;
 	~numRandom.postln;
@@ -296,15 +265,47 @@ t.action_({
 r = Button.new(w, Rect(~coor.(1, ~bX, ~bWidth, ~mainBuf), ~y1, ~bWidth, ~bHeight));
 r.states_([["Random!", Color.white, Color.black]]);
 r.action_({
-	"generating random configuration".post;
-	~numRandom.do { |i|
-		"\tadding doik".post;
-		i.postln;
-	}
-
-	// todo
+	var dict = Library.at(\dict);
+	"\tgenerating random configuration of ~".post;
+	~numRandom.post;
+	" doiks: ".postln;
+	~numRandom.do { |k|
+		var i = (0..(~gridSize - 1)).choose;
+		var j = (0..(~gridSize - 1)).choose;
+		var dir = (0..3).choose;
+		~createButton.(i, j, dir);
+	};
 });
 
+
+//---------------------------- add ability to load own sample  -----------------------
+
+~loadYourOwn = { |path|
+	var buf;
+	buf = Buffer.read(s, path);
+	~samples.putPairs([path, buf]);
+	~allSamples = ~samples.keys.asArray;
+};
+
+a = TextField(w, Rect(~coor.(2), ~y1, 190, ~bHeight));
+a.string = "custom sample path (absolute)";
+a.action = {arg field;
+	var path = field.value;
+	"\tChanged custom sample path: ".post;
+	path.postln;
+};
+
+a.background_(Color.white);
+a.stringColor_(Color.gray);
+
+//---------------------------- add own path  -------------------------------
+r = Button.new(w, Rect(~coor.(4), ~y1, ~bWidth, ~bHeight));
+r.states_([["Add", Color.white, Color.black]]);
+r.action_({
+	"\tLoading custom sample path: ".post;
+	a.value.postln;
+	~loadYourOwn.(a.value);
+});
 
 
 //==================================================================================
@@ -314,8 +315,8 @@ r.action_({
 y = Button.new(w,Rect(~coor.(0), ~y2, ~bWidth, ~bHeight));
 y.font_("Courier");
 y.states_([
-	["Load grid", Color.blue, Color.green]]);
-
+	["Load grid", Color.black, Color.rand]
+]);
 y.action_({ |v|
 	~initAll.();
 });
@@ -330,11 +331,20 @@ p.states_([
 p.action_({ |v|
 	switch(v.value,
 		0, {
-			"playing".postln;
+			var doiks = ~getDoiksFromDict.();
+			"PLAYING, adding new doiks from dictionary: ".postln;
+			// add them to grid manually
+			doiks.do { |d|
+				var i = d.coords_[0];
+				var j = d.coords_[1];
+				d.debug_;
+				~grd.grid_[i, j].add(d);
+			};
+
 			~state = \play;
 
 		}, {
-			"paused".postln;
+			"PAUSED. time to add new doiks!!".postln;
 			~state = \pause;
 		}
 	);
@@ -342,47 +352,63 @@ p.action_({ |v|
 
 
 //---------------------------- tempo slider  ---------------------------------------
+~lowTempo = 60;
 t = Slider.new(w,Rect(~coor.(2), ~y2, ~bWidth, ~bHeight));
 t.action_({ |b|
-	var tem = b.value * 100 + 80;
+	var tem = b.value * 100 + ~lowTempo;
 	"New bpm: ".post;
 	tem.postln;
 	~tempo = ~convertBPM.(tem);
 });
-t.value = 0.5;
+t.value = 0.3;
 
 //---------------------------- tempo slider help text  -----------------------------
 l = StaticText.new(w,Rect(~coor.(3), ~y2, 200, ~bHeight));
 l.stringColor = Color.gray;
-l.string_("bpm: [80, 180]");
+l.string_("bpm: [60, 160]");
 
 //==================================================================================
 //---------------------------- callback funcs --------------------------------------
 
+~toDoik = {
+	|d|
+	d.postln;
+	~doik.value(
+		~insts.at(d.inst_), // Instrument
+		~samples.at(d.sample_), // Sample
+		d.dir_, // Direction [0..3]
+		d.coor_ // X & Y coords
+	);
+};
 
 //---------------------------- init function  --------------------------------------
-~initAll = {
-	// extract all doiks from the dirctionary, and add them to the grid
-	var dict = Library.at(\dict);
+// holds mappings of doik id's to their current coordinates.
+~doikCoords = Dictionary.new();
+
+~getDoiksFromDict = {
 	var doiks = List.new();
-	var grd;
+	var dict = Library.at(\dict);
+	"\tGetting doiks from current dictionary.".postln;
 	dict.do{ |d, i|
-		d.postln;
 		if (d.active_ == True) {
 			d.debug_;
-			doiks.add(~doik.value(
-				~insts[d.inst_], // Instrument
-				~samples[d.sample_], // Sample
-				d.dir_, // Direction
-				d.coor_)
-			);  // x & y coords
-		}
+			doiks.add(~toDoik.(d));
+		};
 	};
-	grd = ~grid.value(~gridSize, doiks.asArray);
-	grd.debug_;
-	~state = \play;
-	~play.(grd).fork;
+	doiks;
+};
 
+~initAll = {
+	// extract all doiks from the dictionary, and add them to the grid
+	var grd;
+	var doiks = ~getDoiksFromDict.();
+	~grd = ~grid.value(~gridSize, doiks.asArray);
+	~curGridID = ~grd.identityHash;
+	~grd.debug_;
+	s.boot(recover:true);
+
+	~state = \play;
+	~play.(~grd);
 };
 
 w.front;

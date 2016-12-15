@@ -106,10 +106,6 @@ SynthDef(\sfgrain,
 		// do the swapping:
 		// the samples of doik[i] gets swapped with doik[i+1]
 		// last one gets wrapped around
-		"still alive".postln;
-		doiks.postln;
-		d0 = doiks[0].sample_;
-
 		doiks.size.do { |i, d|
 			allDoiks = allDoiks.add(doiks[i]);
 		};
@@ -118,9 +114,11 @@ SynthDef(\sfgrain,
 	// For each doik that has collided with a wall:
 	wallCollisions.do({
 		|doik|
-
 		// Generate score if 'score_' is a function instead of an array
-		var notes = if (doik.instrument_.score_.isFunction, {doik.instrument_.score_.value},{doik.instrument_.score_});
+		var notes = if (doik.instrument_.score_.isFunction,
+			{doik.instrument_.score_.value},
+			{doik.instrument_.score_}
+		);
 		notes.do { |note, idx|
 			// Schedule all notes for playback in the future
 			SystemClock.sched(note[0], {
@@ -132,7 +130,7 @@ SynthDef(\sfgrain,
 						\dur, note[2],
 
 						// Pan according to 'x' position on grid
-						// \pan, doik.coords_[0].linlin(0, d.size_-1, -1.0, 1.0)
+						\pan, doik.coords_[0].linlin(0, d.size_-1, -1.0, 1.0)
 					]
 				);
 			});
