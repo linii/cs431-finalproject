@@ -1,14 +1,30 @@
-// Array of [time, pos, dur's]]
+// Instruments output arrays of tuples. Each tuple is of the form [time, pos, dur], and represents
+// an individual grain of sound.
+//
+// 'time' is the number of seconds after the instrument is triggered to play the grain
+// 'pos' is where the grain starts within the sample, expressed in relative terms. 0.0 is the beginning
+//      of the sample, and 1.0 is the end
+// 'dur' is the length of the grain, in seconds
+
+// Plays 5 grains of successively longer lengths and positions within the sample
 var defaultScore = Array.fill(5, {|i| [(i+1)/5, (i+1)/5, (i+1)/5]});
 
+// Creates an accelerando effect by playing grains closer to each other as time goes on
 var exponentialDecay = Array.fill(100, {|i| [exprand(0.01, 1), i/100, 1.0]});
 
+// Over the course of 10 seconds, play a grain repeatedly with a duration of one second,
+// to create a cloudy effect
 var long = Array.fill(100, {|i| [10*i/100, 0.5, 1.0]});
 
-var randomcloud = Array.fill(20, {|i| [0.5*i/20, 1.0.rand, [0.01, 0.05, 0.25].choose]});
+// Play random positions within the grain over the course of 3 seconds,
+// each grain is will be one of three different lengths, chosen at random
+var randomcloud = Array.fill(20, {|i| [3.0*i/20, 1.0.rand, [0.01, 0.05, 0.25].choose]});
 
+// Similar to 'exponentialDecay'
 var zip = {Array.fill(20, {|i| [1 - (1/2.pow(i)), 1.0.rand, 0.5]})};
 
+// Select two positions within a grain. Play them at similar intervals that gradually
+// diverge from one another.
 var zipper = {
 	var s1 = 1.0.rand;
 	var s2 = 1.0.rand;
@@ -23,6 +39,8 @@ var zipper = {
 	(zip1 ++ zip2);
 };
 
+// Similar to 'zipper', but the interval between identical grains is linear, instead of
+// inverse exponential
 var linearZipper = {
 	var s1 = 1.0.rand;
 	var s2 = 1.0.rand;
@@ -37,6 +55,7 @@ var linearZipper = {
 	(zip1 ++ zip2);
 };
 
+// Play a grain for gradually longer periods of time
 var lengthen = {
 	var s1 = 1.0.rand;
 	Array.fill(20, {
@@ -45,6 +64,7 @@ var lengthen = {
 	});
 };
 
+// Play a bunch of grains, each starting a little farther along in their sample
 var seek = {
 	var offset = 0.5.rand;
 	Array.fill(20, {
@@ -74,7 +94,7 @@ var seek = {
 
 
 // ------------------------------------------------------------------
-// sample instruments... pretty uninspiring thus far
+// Final Instruments list
 
 ~instrument1 = ~instrument.(defaultScore);
 ~instrument2 = ~instrument.(exponentialDecay);
