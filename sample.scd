@@ -21,3 +21,7 @@
 // Songs
 ~edm = ~load.("sounds/shelter.wav");     // done
 ~pop = ~load.("sounds/closer.wav");     // done
+
+~computer = ~load.("sounds/computer.wav");
+~spaceship = ~load.("sounds/spaceship.wav");
+~bubbles = ~load.("sounds/bubbles.wav");

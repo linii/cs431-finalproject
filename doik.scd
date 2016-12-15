@@ -22,7 +22,7 @@ SynthDef(\sfgrain,
 			doneAction: 0
 		) * (EnvGen.kr(Env.perc(0.01, dur), doneAction:2) - 0.001);
 
-		Out.ar(0,Pan2.ar(grain, pan))
+		Out.ar(0,Splay.ar([grain[0], grain[1]], 0.5, 1, pan));
 }).add;
 
 
@@ -49,7 +49,7 @@ SynthDef(\sfgrain,
 		// Instrument/synth, aka grain definitions contained in doik
 		instrument_: instrument,
 
-		// Samples that can be played in combo with a Synth
+		// Sample that can be played in combo with an instrument
 		sample_: sample_bufnum,
 
 		// 0 (up) 1 (left) 2 (down) 3(right)
@@ -101,65 +101,43 @@ SynthDef(\sfgrain,
 	var allDoiks;
 
 	// For each set of doiks that has collided with another doik:
-	doikCollisions.do({ |doiks|
+	doikCollisions.do({
+		|doiks|
 		// do the swapping:
 		// the samples of doik[i] gets swapped with doik[i+1]
 		// last one gets wrapped around
-/*		d0 = doiks[0].samples_;
-		doiks.size.do { |i, d|
-			if (i == (doiks.size - 1), {
-				doiks[doiks.size - 1].samples_ = d0;
-			}, {
-				doiks[i].samples_ = doiks[i+1].samples_;
-			};
-			);
-			allDoiks.add(d);
-		};*/
+		"still alive".postln;
+		doiks.postln;
+		d0 = doiks[0].sample_;
 
-		// play each of the instruments in the collision
-/*		doiks.do { |doik|
-			doik.durBase_ = ~durMax.min(doik.durBase_ * ~durMultiplier);
-			doik.instruments_.do { |inst|
-				doik.samples_.do { |sample|
-					if (sample != nil) {
-						{
-							~grains.rand.do {
-								x = Synth(\sfgrain,
-									[
-										\bufnum, sample.buf_,
-										\startPos, inst.posFunc_.value[1], // todo: fix
-										\amp, exprand(0.005, 0.1),
-										\pan, doik.coords_[0]/10,
-										\dur, inst.durFunc_.value(doik.durBase_);
-									]
-								);
-								~waitTime.rand.wait; // todo
-							};
-						}.fork;
-					};
-				};
-			};
-		};*/
+		doiks.size.do { |i, d|
+			allDoiks = allDoiks.add(doiks[i]);
+		};
 	});
+
 	// For each doik that has collided with a wall:
 	wallCollisions.do({
 		|doik|
+
+		// Generate score if 'score_' is a function instead of an array
 		var notes = if (doik.instrument_.score_.isFunction, {doik.instrument_.score_.value},{doik.instrument_.score_});
-			notes.do { |note, idx|
-				SystemClock.sched(note[0], {
-					x = Synth(\sfgrain,
-						[
-							\bufnum, doik.sample_,
-							\startPos, note[1],
-							\amp, exprand(0.005, 0.1),
-							\dur, note[2],
-						]
-					);
-				});
-			};
+		notes.do { |note, idx|
+			// Schedule all notes for playback in the future
+			SystemClock.sched(note[0], {
+				x = Synth(\sfgrain,
+					[
+						\bufnum, doik.sample_,
+						\startPos, note[1],
+						\amp, exprand(0.005, 0.1),
+						\dur, note[2],
+
+						// Pan according to 'x' position on grid
+						\pan, doik.coords_[0].linlin(0, d.size_-1, -1.0, 1.0)
+					]
+				);
+			});
+		};
 	});
-	allDoiks; // for easier processing in grid
+	allDoiks;
 };
-
-
 
