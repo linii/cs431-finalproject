@@ -33,7 +33,7 @@
 // ============= PARAMETERS ==================
 
 // Size of grid
-~gridSize = 12;
+~gridSize = 10;
 
 // Iteration speed
 ~bpm = 150;

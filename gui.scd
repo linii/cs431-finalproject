@@ -8,6 +8,9 @@
 	\fire,
 	\stream,
 	\saw,
+	\computer,
+	\spaceship,
+	\bubbles,
 	\ambient_restaurant,
 	\piano1__PhilipGlass,
 	\piano2__animeOST,
@@ -21,7 +24,10 @@
 	\long,
 	\random_cloud,
 	\zipper,
-	\linear_zipper
+	\zip,
+	\linear_zipper,
+	\lengthen,
+	\seek
 ];
 
 ~insts = ();
@@ -31,11 +37,13 @@
 		\exponential_decay, ~instrument2,
 		\long, ~instrument3,
 		\random_cloud, ~instrument4,
-		\zipper, ~instrument5,
-		\linear_zipper, ~instrument_zipper
+		\zip, ~instrument5,
+		\zipper, ~instrument_zipper,
+		\linear_zipper, ~instrument_linearzipper,
+		\lengthen, ~instrument_lengthen,
+		\seek, ~instrument_seek,
 	]
 );
-
 
 ~samples = ();
 ~samples.putPairs([
@@ -43,6 +51,9 @@
 	\fire, ~fire,
 	\stream, ~stream,
 	\saw, ~sawing,
+	\computer, ~computer,
+	\spaceship, ~spaceship,
+	\bubbles, ~bubbles,
 	\ambient_restaurant, ~ambient,
 	\piano1__PhilipGlass, ~piano1,
 	\piano2__animeOST, ~piano2,
@@ -143,7 +154,7 @@ l.string_("Instructions: click on grid squares to select direction of doik. Inst
 };
 
 Library.put(\dict, ~dict);
-~size = (~h - 180) / ~gridSize;
+~size = (~h - 200) / ~gridSize;
 ~dict = Dictionary.new;
 ~num = 0; // number of doiks currently active
 ~counter = 0; // for assigning unique ID's
@@ -294,6 +305,8 @@ r.action_({
 	// todo
 });
 
+
+
 //==================================================================================
 //---------------------------- main controls, second row ---------------------------
 
@@ -354,18 +367,22 @@ l.string_("bpm: [80, 180]");
 	var doiks = List.new();
 	var grd;
 	dict.do{ |d, i|
+		d.postln;
 		if (d.active_ == True) {
 			d.debug_;
 			doiks.add(~doik.value(
 				~insts[d.inst_], // Instrument
 				~samples[d.sample_], // Sample
 				d.dir_, // Direction
-				d.coor_));  // x & y coords
+				d.coor_)
+			);  // x & y coords
 		}
 	};
 	grd = ~grid.value(~gridSize, doiks.asArray);
+	grd.debug_;
 	~state = \play;
 	~play.(grd).fork;
+
 };
 
 w.front;
