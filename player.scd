@@ -1,10 +1,10 @@
 // first init config
 ~initParamsA = [
-	[~instrument1, ~instrument5], // one for each doik
-	[~piano1, ~sawing], // one for each doik
-	[0,1],        // init directions
-	[0,7],
-	[0,2],
+	[~instrument_linearzipper, ~instrument_linearzipper, ~instrument_linearzipper], // one for each doik
+	[~piano2, ~fire, ~saw], // one for each doik
+	[0, 2, 1],           // init directions
+	[0, 0, 2],
+	[0, 6, 2],
 ];
 
 
@@ -33,7 +33,7 @@
 // ============= PARAMETERS ==================
 
 // Size of grid
-~gridSize = 9;
+~gridSize = 12;
 
 // Iteration speed
 ~bpm = 150;
@@ -44,7 +44,7 @@
 ~tempo = ~convertBPM.(~bpm);
 
 // starting grid position
-~init.(0);
+~init.(~initParamsA);
 
 // reset ~gridCount
 ~gridCount = 0;
@@ -78,10 +78,5 @@
 // function to get a new grid
 ~init = {arg mvt;
 	~gridCount = 1;
-
-	case
-	{mvt == 0}{d = ~grid.value(~gridSize, ~initWithParams.(~initParamsA).asArray)}
-	{mvt == 1}{d = ~grid.value(~gridSize, ~initWithParams.(~initParamsB).asArray)}
-	// {mvt == 2}{d = ~grid.value(~gridSize, ~initWithParams.(~initParamsC).asArray)}
-	// {mvt == 3}{d = ~grid.value(~gridSize, ~initRandom.asArray)}
+	d = ~grid.value(~gridSize, ~initWithParams.(mvt).asArray)
 };

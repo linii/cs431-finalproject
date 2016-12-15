@@ -53,7 +53,7 @@
 			"[".post;
 			list.do { |d|
 				"(".post;
-				d.debug_;
+				d.postln;
 				"), ".post;
 			};
 			"]".postln;
@@ -112,13 +112,24 @@
 					// If the Doik has NOT collided with the wall
 					if (ds.size > 1 && self.doikInList(wallCollisions, ds) == False,
 						{
+							var localColls = Array.new;
 							if (ds.size < 3, {
+								var tmp = self.grid_[i,j][0].sample_;
+								self.grid_[i, j][0].sample_ = self.grid_[i, j][1].sample_;
+								self.grid_[i, j][1].sample_ = tmp;
+
+								"new samples:".postln;
+								self.grid_[i, j][0].sample_.postln;
+								self.grid_[i, j][1].sample_.postln;
+
 								ds.do { |d, k|
-									self.grid_[i, j][k].direction_ = (d.direction_ + 1) % 4;
+									self.grid_[i, j][k].direction_ = (d.direction_ + 2) % 4;
 									self.grid_[i, j][k].coords_ = self.reverseCoordsOnCollision(d);
 									self.grid_[i, j][k].count_ = d.count_ + 1;
 									self.grid_[i, j][k].count_since_wall_ = d.count_since_wall_ + 1;
-								}
+									localColls = localColls.add(d);
+								};
+								collisions = collisions.add(localColls);
 							}, { });
 						}, {}
 					)
@@ -135,11 +146,12 @@
 			var y = d.coords_[1];
 
 			switch(d.direction_,
-				{0}, { newCoords = [x, y + 1]},  // up -> down
+				{0}, { newCoords = [x, y - 1]},  // up -> down
 				{1}, { newCoords = [x + 1, y]},  // left -> right
-				{2}, { newCoords = [x, y - 1]},  // down -> up
+				{2}, { newCoords = [x, y + 1]},  // down -> up
 				{3}, { newCoords = [x - 1, y]} // right -> left
 			);
+
 
 			newCoords;
 		},
@@ -177,9 +189,8 @@
 			// Get list of doik collision candidates
 			doikCollisions = self.getDoikCollisions(wallCollisions);
 			"Doik collisions:\t".postln;
-			doikCollisions.do{ |ds|
-				self.printDoikList_(ds);
-			};
+			// self.printDoikList_(doikCollisions);
+			doikCollisions.size.postln;
 
 			// Calling ~onCollision is what "plays" this iteration of the grid. ~onCollision receives arrays of
 			// the Doiks that have hit each other, and the Doiks that have hit a wall
@@ -265,9 +276,6 @@
 					};
 				}
 			};
-
-			"New doiks:".postln;
-			newDoiks.postln;
 
 			// Update our internal grid representation to represent all Doik movement
 			self.grid_ = ~grid.(self.size_, newDoiks).grid_;

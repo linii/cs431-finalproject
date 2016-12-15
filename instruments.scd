@@ -14,29 +14,44 @@ var zipper = {
 	var s2 = 1.0.rand;
 	var zip1 = Array.fill(10, {
 		|i|
-		[1 - (1/3.pow(i/2)), s1, 0.5]
+		[2 - (2/3.pow(i/2)), s1, 0.5]
 	});
 	var zip2 = Array.fill(10, {
 		|i|
-		[1.1 * (1 - (1/3.pow(i/2))) + 0.2, s2, 0.5]
+		[2.2 * (2 - (1/3.pow(i/2))) + 0.2, s2, 0.5]
 	});
-	(zip1 ++ zip2).sort({|a, b| a[0] < b[0]});
+	(zip1 ++ zip2);
 };
 
 var linearZipper = {
 	var s1 = 1.0.rand;
 	var s2 = 1.0.rand;
-	var zip1 = Array.fill(25, {
+	var zip1 = Array.fill(50, {
 		|i|
-		[i*0.2, s1, i*0.2]
+		[i*0.3, s1, 0.1]
 	});
-	var zip2 = Array.fill(25, {
+	var zip2 = Array.fill(50, {
 		|i|
-		[i*0.22, s1, i*0.2]
+		[i*0.2, s2, 0.1]
 	});
-	(zip1 ++ zip2).sort({|a, b| a[0] < b[0]});
+	(zip1 ++ zip2);
 };
 
+var lengthen = {
+	var s1 = 1.0.rand;
+	Array.fill(20, {
+		|i|
+		[0.1*i, s1, 0.1*i]
+	});
+};
+
+var seek = {
+	var offset = 0.5.rand;
+	Array.fill(20, {
+		|i|
+		[0.1*i, offset+(0.5*i/20), 0.5]
+	});
+};
 // an Instrument "class" implemented using a Supercollider environment.
 
 ~instrument = {
@@ -63,7 +78,10 @@ var linearZipper = {
 
 ~instrument1 = ~instrument.(defaultScore);
 ~instrument2 = ~instrument.(exponentialDecay);
-~instrument3 = ~instrument.(long);
+~instrument_long = ~instrument.(long);
 ~instrument4 = ~instrument.(randomcloud);
 ~instrument5 = ~instrument.(zip);
 ~instrument_zipper = ~instrument.(zipper);
+~instrument_linearzipper = ~instrument.(linearZipper);
+~instrument_lengthen = ~instrument.(lengthen);
+~instrument_seek = ~instrument.(seek);
