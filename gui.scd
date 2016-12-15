@@ -3,7 +3,6 @@
 // Select sample, instrument, and bpm (stretch goal) for each doik
 // Ability to start/stop playing, + overall bpm
 // Random configuration
-var doikControls =  List.new();
 ~allSamples = [
 	\rain,
 	\fire,
@@ -54,6 +53,21 @@ var doikControls =  List.new();
 
 ~h = 600;
 ~w = 900;
+~offset = 15;
+
+~bWidth = 100;
+~bHeight = 30;
+
+~width = 190;
+~height = 20;
+~slideWidth = 75;
+~buf = 5;
+
+~bX = 15;
+~bY = 500;
+~mainBuf = 15;
+
+~numRandom = 3;
 
 w = Window.new("Granular synthesis automata controller", Rect(50,200,~w,~h));
 w.background = Color.white;
@@ -65,13 +79,19 @@ w.alpha = 0.95;
 	obj.identityHash;
 };
 
-~offset = 15;
+~coor = {
+	arg n, base=~cO, unit=~cW, buf=~cB;
+	base + ((unit + buf) * n);
+};
+
+
 
 //==================================================================================
 //---------------------------- instruction text-------------------------------------
 
 //---------------------------- tempo slider help text  -----------------------------
 l = StaticText.new(w,Rect(~offset, 0, ~w, ~bHeight + 50));
+
 l.stringColor = Color.red;
 l.string_("Instructions: click on grid squares to select direction of doik. Instrument, sample opts on the right (corresponding to color).\nClick LOAD GRID when ready. To restart, rearrange config and click LOAD GRID. (For random opt, input # of rand doiks and click Random.)");
 
@@ -123,7 +143,6 @@ l.string_("Instructions: click on grid squares to select direction of doik. Inst
 };
 
 Library.put(\dict, ~dict);
-
 ~size = (~h - 180) / ~gridSize;
 ~dict = Dictionary.new;
 ~num = 0; // number of doiks currently active
@@ -184,11 +203,6 @@ Library.put(\dict, ~dict);
 
 //---------------------------- add doik gui  ---------------------------------------
 
-~width = 160;
-~height = 20;
-~slideWidth = 75;
-~buf = 5;
-
 ~addDoikGUI = { |h, n|
 	var lib = Library.at(\dict);
 	var yval = (~height + ~buf) * (n + 1) + 40;
@@ -202,10 +216,6 @@ Library.put(\dict, ~dict);
 	var item2 = c2.removeAt(lib[h].inst_idx_);
 	c1 = [item1] ++ c1;
 	c2 = [item2] ++ c2;
-
-	c1.postln;
-	c2.postln;
-
 
 	~cO = 460;
 	~cW = ~width;
@@ -238,38 +248,26 @@ Library.put(\dict, ~dict);
 	});
 
 	//-------------------------------- tempo slider --------------------------------
-	a = Slider.new(w,Rect(~coor.(2), yval, ~slideWidth, ~height));
+/*	a = Slider.new(w,Rect(~coor.(2), yval, ~slideWidth, ~height));
 	a.action_({ |a|
 		var tem = a.value * 100 + 80;
 		"New bpm: ".post;
 		tem.postln;
 		lib[h].bpm_ = tem;
-	});
+	});*/
 };
 
 //==================================================================================
 //---------------------------- main controls, first row ----------------------------
-
-~bWidth = 100;
-~bHeight = 30;
-~bX = 15;
-~bY = 500;
-~mainBuf = 15;
-
-~coor = {
-	arg n, base=~cO, unit=~cW, buf=~cB;
-	base + ((unit + buf) * n);
-};
-
 // calc y-coordinates for each row
 ~y1 = ~coor.(0, ~bY, ~bHeight, ~mainBuf);
+~y2 = ~coor.(1, ~bY, ~bHeight, ~mainBuf);
 
 // set up for calculating x-coordinates
 ~cO = ~bX;
 ~cW = ~bWidth;
 ~cB = ~mainBuf;
 
-~numRandom = 3;
 //---------------------------- random config num slider  ---------------------------
 t = TextField(w,Rect(~coor.(0), ~y1, ~bWidth, ~bHeight));
 t.string = "# random";
@@ -301,7 +299,7 @@ r.action_({
 
 //---------------------------- start button -----------------------------------------
 y = Button.new(w,Rect(~coor.(0), ~y2, ~bWidth, ~bHeight));
-p.font_("Courier");
+y.font_("Courier");
 y.states_([
 	["Load grid", Color.blue, Color.green]]);
 

@@ -62,6 +62,7 @@
 			("   Grid Count: " + ~gridCount).postln;
 		};
 		~tempo; // delay before running this function again.
+
 	});
 };
 // ~play.(d);
