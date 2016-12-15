@@ -57,6 +57,7 @@
 	SystemClock.sched(0.0, {arg time;
 		block { |break|
 			if (~curGridID != grid.identityHash) {
+				"Skipping".post;
 				break.value(1);
 			};
 			if (~state == \play) {

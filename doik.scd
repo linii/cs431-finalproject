@@ -130,7 +130,7 @@ SynthDef(\sfgrain,
 						\dur, note[2],
 
 						// Pan according to 'x' position on grid
-						\pan, doik.coords_[0].linlin(0, d.size_-1, -1.0, 1.0)
+						\pan, doik.coords_[0].linlin(0, ~gridSize - 1, -1.0, 1.0)
 					]
 				);
 			});

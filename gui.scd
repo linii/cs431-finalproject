@@ -30,6 +30,7 @@
 w = Window.new("Granular synthesis automata controller", Rect(50,200,~w,~h));
 w.background = Color.white;
 w.alpha = 0.9;
+w.front;
 
 ~getID = {
 	|obj|
@@ -87,6 +88,8 @@ l.string_("Instructions: Click on grid squares to select direction of doik; inst
 			self.sample_.post;
 			"  | inst: ".post;
 			self.inst_.postln;
+			"  | color: ".post;
+			self.color_.postln;
 		}
 	)
 };
@@ -118,12 +121,15 @@ Library.put(\dict, ~dict);
 		(~offset * 5) + (~size * j), ~size, ~size));
 
 	newDoik = ~guiDoik.value(~counter, d, i, j, dir);
+
+	~dict.add(but.identityHash -> newDoik);
 	if (dir != -1) {
 		// indicates it's from random function;
 		newDoik.active_ = True;
+		newDoik.debug_;
+		~addDoikGUI.(but.identityHash, ~num);
+		~num = ~num + 1;
 	};
-
-	~dict.add(but.identityHash -> newDoik);
 
 	// update id counter
 	~counter = ~counter + 1;
@@ -274,6 +280,7 @@ r.action_({
 		var j = (0..(~gridSize - 1)).choose;
 		var dir = (0..3).choose;
 		~createButton.(i, j, dir);
+		// want to show state even tho you can't change it.
 	};
 });
 
@@ -360,7 +367,7 @@ t.action_({ |b|
 	tem.postln;
 	~tempo = ~convertBPM.(tem);
 });
-t.value = 0.3;
+t.value = 0.4;
 
 //---------------------------- tempo slider help text  -----------------------------
 l = StaticText.new(w,Rect(~coor.(3), ~y2, 200, ~bHeight));
@@ -402,13 +409,16 @@ l.string_("bpm: [60, 160]");
 	// extract all doiks from the dictionary, and add them to the grid
 	var grd;
 	var doiks = ~getDoiksFromDict.();
+	s.boot(recover:true);
 	~grd = ~grid.value(~gridSize, doiks.asArray);
+	"Number of init doiks: ".post;
+	~grd.doiks_.postln;
+
 	~curGridID = ~grd.identityHash;
 	~grd.debug_;
-	s.boot(recover:true);
+
 
 	~state = \play;
 	~play.(~grd);
 };
 
-w.front;

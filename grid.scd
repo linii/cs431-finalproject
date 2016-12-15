@@ -9,7 +9,7 @@
 	|size, initDoiks|
 
 	var initGrid;
-	var totalDoiks;
+	var totalDoiks = 0;
 	var pos;
 
 	// Initialize a blank 2D array of dimensions (size x size), each element
@@ -24,8 +24,9 @@
 		d.debug_;
 		pos = initGrid[d.coords_[0],d.coords_[1]];
 
-		if (pos.size == 0 && ~gridCount != 0) {
+		if (pos.size == 0) {
 			initGrid[d.coords_[0],d.coords_[1]].add(d);
+			totalDoiks = totalDoiks + 1;
 			// Marcus note: I commented the following line out and replaced
 			// it with the one above because I was unsure if the original
 			// syntax would update the List in initGrid, or just a copy
@@ -33,9 +34,6 @@
 			// pos.add(d);
 		}
 	};
-
-	// We keep track of how many Doiks are on the grid at any point in time
-	totalDoiks = initDoiks.size;
 
 	(
 		// Total # of Doiks on grid
@@ -289,7 +287,9 @@
 			|self|
 
 			"\n\nGrid:  \tNumber of doiks: ".post;
-			self.numDoiks_.postln;
+			self.doiks_.post;
+			"\tSize of grid: ".post;
+			self.size_.postln;
 			"\n".postln;
 			self.size_.do { |i|
 				self.size_.do { |j|
