@@ -60,11 +60,11 @@
 			grid.next_;
 
 			("   Grid Count: " + ~gridCount).postln;
-		}
+		};
 		~tempo // delay before running this function again.
 	});
 };
-~play.(d);
+// ~play.(d);
 
 // s.stopRecording;
 
