@@ -10,9 +10,8 @@
 1. Boot server.
 2. Evaluate: `doik.scd`, `grid.scd`, `instrument.scd`, `sample.scd`, `player.scd`
 - of these: `sample.scd` requires the server to be booted.
-3. Evaluate `gui.scd` **three times**, closing the window each time.
+3. Evaluate `gui.scd` **two times**.
 - The first time, it will be very slow and give you a view w/o the grid.
-- The second time, it will not play
 4. Enjoy
 5. The GUI is designed to faciliate semi-live production of music. The grid shown will NOT update live, but you can:
     - PAUSE and add new doiks, customizing dir / sample / instrument, then hit PLAY again
